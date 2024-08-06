@@ -54,12 +54,11 @@ function [Tsol] = qfeatures_qubo_base(X, g, y, K, readr)
     % Re-sort original features
     gtmp = g(sort_idx);
     jdx = xsol.BestX(sort_idx) == 1;
+    sol_genes = gtmp(jdx);
 
     % Make a row for features (Tsol requires it)
-    nx = size(jdx, 1);
-    if nx == 1
-        sol_genes = gtmp(jdx);
-    else
+    nx = size(sol_genes, 1);
+    if nx > 1
         sol_genes = gtmp(jdx)';
     end
 

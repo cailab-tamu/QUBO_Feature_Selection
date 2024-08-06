@@ -38,12 +38,10 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode)
         % Select top K features
         [~, sorted_idx] = sort(abs(coef), 'descend');
         selectedFeatures = sorted_idx(1:K);
-        nx = size(selectedFeatures, 1);
-        fprintf("Nx value %d \n", nx)
-        if nx == 1
-            sol_genes_lasso = g(selectedFeatures);
-        else
-            sol_genes_lasso = g(selectedFeatures)';
+        sol_genes_lasso = g(selectedFeatures);
+        nx = size(sol_genes_lasso, 1);
+        if nx > 1
+            sol_genes_lasso = sol_genes_lasso';
         end
         time_lasso = toc;
         fprintf("LASSO FS time: %f \n", time_lasso);
@@ -56,13 +54,11 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode)
         nearest_n = 10;
         % relieff solver
         [rankedFeatures, ~] = relieff(X', y', nearest_n);
-
         % Select top K features
-        nx = size(rankedFeatures, 1);
-        if nx == 1
-            sol_genes_relief = g(rankedFeatures(1:K));
-        else
-            sol_genes_relief = g(rankedFeatures(1:K))';
+        sol_genes_relief = g(rankedFeatures(1:K));
+        nx = size(sol_genes_relief, 1);
+        if nx > 1
+            sol_genes_relief = sol_genes_relief';
         end
         time_relief = toc;
         fprintf("ReliefF FS time: %f \n", time_relief);

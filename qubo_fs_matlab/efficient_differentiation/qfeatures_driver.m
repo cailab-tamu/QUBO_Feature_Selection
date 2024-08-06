@@ -3,7 +3,7 @@
 my_path = "../../../src-v0.2";
 addpath(genpath(my_path));
 
-path="../D1_1f_G2M_1000g_Monocle.mat";
+path="D1_1f_G2M_1000g_Monocle.mat";
 data  = load(path);
 sce = data.sce;
 clear data;
@@ -20,8 +20,9 @@ K = 20;
 cell_type_target = "monocle3_pseudotime";
 
 % Number of genes
-ngenes = 1000;
+ngenes = length( sce.g );
 
+% Preparing target predictor y from pseudo-time values per cell
 idx = find(contains(sce.list_cell_attributes(1:2:end), cell_type_target));
 if isempty(idx), returen; end
 y = sce.list_cell_attributes{idx*2};
@@ -33,9 +34,9 @@ fprintf("Final matrix size %d , %d \n",size(X));
 readR = false;
 Tqubo = qfeatures_qubo_base( X, g, y, K, readR);
 
-Tml = mlfeatures_base(X, g, y, K, 4);
+Tml = mlfeatures_base(X, g, y, K, 1);
 
-% Label stuff
+% Label stuff for saving tables
 cts = strcat(string(K),cell_type_target);
 cts = strcat("_R0_f",cts);
 str_numcells="_5k_cells";
@@ -52,14 +53,12 @@ fname = "featues";
 ftext_name = strcat(fname, fname0,".txt" );
 writematrix(Tqubo.sol_genes','qubo_features.txt');
 writematrix(Tml.sol_genes_lasso',"lasso_features.txt");
-writematrix(Tml.sol_genes_chi2',"chi2_features.txt");
-writematrix(Tml.sol_genes_anova',"anova_features.txt");
-writematrix(Tml.sol_genes_relief',"relief_features.txt");
+%writematrix(Tml.sol_genes_relief',"relief_features.txt");
 
 % Intersection of lasso with qubo
 inter_genes = intersect(Tqubo.sol_genes, Tml.sol_genes_lasso, 'stable');
 
-% Saving matrices for d-wave
+%% Saving matrices for d-wave
 load('R0.mat');
 
 R = R0(1:end-1,1:end-1)/(K-1);
