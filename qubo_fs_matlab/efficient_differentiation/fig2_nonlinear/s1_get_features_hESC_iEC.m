@@ -1,5 +1,4 @@
-%load('../D1_1f_G2M_5000g_Monocle.mat') % Original manuscript utilized this
-load('../D1_1f_G2M_1000g_Monocle.mat')
+load('../D1_1f_G2M_5000g_Monocle.mat') % Original manuscript utilized this
 g = sce.g;
 X = full(sc_transform(sce.X, "type", "PearsonResiduals"));
 K = 35;
@@ -15,7 +14,7 @@ for kk = 2:2
     y = sce.list_cell_attributes{idx*2};
     y = y';
 
-    Tqubo = qfeatures_qubo_base(X, g, y, K, true);
+    Tqubo = qfeatures_qubo_base(X, g, y, K, false);
     g1 = Tqubo.sol_genes;
     
     Tml = mlfeatures_base(X, g, y, K, 1);  
