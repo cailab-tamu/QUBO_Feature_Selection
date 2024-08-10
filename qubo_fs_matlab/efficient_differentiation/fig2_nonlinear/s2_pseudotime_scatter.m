@@ -1,4 +1,4 @@
-load('../D1_1f_G2M_5000g_reMonocle_flipped.mat')
+load('../D1_1f_G2M_5000g_Monocle.mat')
 
 infile = 'genes_all_lasso_splinefit.txt'; 
 highlightg = false; ttxt = 'LASSO';
