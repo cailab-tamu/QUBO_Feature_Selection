@@ -76,3 +76,48 @@ xlabel('Pseudotime')
 ylabel('Standardized Expression')
 box on
 title("Selected features - pseudotime prediction");
+
+%%
+
+f = figure;
+hold on
+for k=1:35
+    h_lasso = plot(t_lasso_sort(:,k), y_lasso_fit(:,k),'LineWidth',2,'Color','k');
+end
+xlim([0 max(t)]);
+ylim([-2 4]);
+xlabel('Pseudotime')
+ylabel('Standardized Expression')
+box on
+title('LASSO')
+f.Position(3) = 545;
+f.Position(4) = 266;
+
+f=figure;
+hold on
+for k=1:35
+    plot(t_qubo_sort(:,k), y_qubo_fit(:,k),'LineWidth',2,'Color', 'k');
+end
+xlim([0 max(t)]);
+ylim([-2 4]);
+xlabel('Pseudotime')
+ylabel('Standardized Expression')
+box on
+title('QUBO')
+
+[idx_common,~,c] = intersect(idx_lasso, idx_qubo);
+for k=1:35
+    if ismember(k,c)
+        plot(t_qubo_sort(:,k), y_qubo_fit(:,k),'LineWidth',0.1,'Color', [0, 0.8, 0]);
+    end
+end
+f.Position(3) = 545;
+f.Position(4) = 266;
+
+fprintf('\nLASSO genes\n');
+fprintf('%s, ', sort(sce.g(idx_lasso)));
+fprintf('\nQUBO genes\n');
+fprintf('%s, ', sort(sce.g(idx_qubo)));
+fprintf('\nCommon genes\n');
+fprintf('%s, ', sort(sce.g(idx_common)));
+fprintf('\n');
