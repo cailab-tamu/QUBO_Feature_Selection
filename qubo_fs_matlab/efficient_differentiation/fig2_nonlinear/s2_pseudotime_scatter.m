@@ -1,4 +1,5 @@
-load('../D1_1f_G2M_5000g_Monocle.mat')
+tic;
+load('../Data_hESC_EC_day1_5000g.mat')
 
 infile = 'genes_all_lasso_splinefit.txt'; 
 highlightg = false; ttxt = 'LASSO';
@@ -24,9 +25,12 @@ X_qubo = X(idx_qubo,:);
 assert(all(y))
 t = sce.list_cell_attributes{idx+1};
 
+toc;
+
 % Smoothin parameter
 sp = 0.75;
 
+tic;
 % LASSO fitting
 ngene = size(X_lasso, 1);
 ncell = size(X_lasso, 2);
@@ -37,6 +41,8 @@ for ig = 1:ngene
                         loess_smoothing(t, X_lasso(ig,:)', sp);
     t_lasso_sort(1:ncell, ig) = t(idx);
 end
+toc;
+tic;
 
 % QUBO fitting
 ngene = size(X_qubo, 1);
@@ -48,8 +54,11 @@ for ig = 1:ngene
                         loess_smoothing(t, X_qubo(ig,:)', sp);
     t_qubo_sort(1:ncell, ig) = t(idx);
 end
+toc;
 
 %% Plotting with Legend
+
+%{
 f = figure;
 f.Position(3)=f.Position(3)*1.4;
 hold on
@@ -76,6 +85,7 @@ xlabel('Pseudotime')
 ylabel('Standardized Expression')
 box on
 title("Selected features - pseudotime prediction");
+%}
 
 %%
 

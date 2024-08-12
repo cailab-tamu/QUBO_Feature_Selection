@@ -1,4 +1,4 @@
-load('../D1_1f_G2M_5000g_Monocle.mat')
+load('../Data_hESC_EC_day1_5000g.mat')
 % Flippling embedding coordinates
 sce.struct_cell_embeddings.phate2d(:,2) = -sce.struct_cell_embeddings.phate2d(:,2);
 sce.struct_cell_embeddings.phate2d(:,1) = -sce.struct_cell_embeddings.phate2d(:,1);
