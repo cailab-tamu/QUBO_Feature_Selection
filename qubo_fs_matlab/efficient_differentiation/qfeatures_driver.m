@@ -3,7 +3,7 @@
 my_path = "../../../src-v0.2";
 addpath(genpath(my_path));
 
-path="D1_1f_G2M_1000g_Monocle.mat";
+path="Data_hESC_EC_day1_5000g.mat";
 data  = load(path);
 sce = data.sce;
 clear data;

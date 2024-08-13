@@ -9,7 +9,8 @@ function [Tsol, xsol] = qfeatures_qubo_base(X, g, y, K, readr)
     % readr => Read mutual information (MI) matrix? true/false
     % OUTPUT: 
     % Tsol ==> MATLAB table containing features and computation time
-
+    
+    if nargin < 5, readr = false; end
     tic;
     if readr
         % Loading MI if pointed out
