@@ -14,11 +14,12 @@ X = full(sce.X);
 X = full(sc_transform(X, "type","PearsonResiduals"));
 
 % Features to extract
-K = 20;
+K = 35;
 
 % Predictor
 cell_type_target = "monocle3_pseudotime";
-
+% 10-Fold cross validation?
+cross_validation = false;
 % Number of genes
 ngenes = length( sce.g );
 
@@ -33,6 +34,11 @@ fprintf("Final matrix size %d , %d \n",size(X));
 % readR false will recompute R0 (MI)
 readR = false;
 Tqubo = qfeatures_qubo_base( X, g, y, K, readR);
+
+if cross_validation
+    [errors, selectedGenesList, selectedGenes0, eners, ener_per_fit_all, ... 
+                 intersections] = cross_validation_qubo( X, g, y, K);
+end
 
 Tml = mlfeatures_base(X, g, y, K, 1);
 

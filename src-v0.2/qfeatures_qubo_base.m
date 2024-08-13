@@ -1,4 +1,4 @@
-function [Tsol] = qfeatures_qubo_base(X, g, y, K, readr)
+function [Tsol, xsol] = qfeatures_qubo_base(X, g, y, K, readr)
     % qfeatures_qubo_base computes the QUBO feature selection (FS)
     % from count matrix X, genes g and y target.
     % INPUT:
