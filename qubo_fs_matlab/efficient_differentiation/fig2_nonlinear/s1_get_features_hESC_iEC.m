@@ -1,7 +1,7 @@
 load('../Data_hESC_EC_day1_5000g.mat') % Original manuscript utilized this
 g = sce.g;
 X = full(sc_transform(sce.X, "type", "PearsonResiduals"));
-K = 35;
+K = 50;
 
 timetype = 'splinefit';
 

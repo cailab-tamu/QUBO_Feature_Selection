@@ -14,7 +14,7 @@ X = full(sce.X);
 X = full(sc_transform(X, "type","PearsonResiduals"));
 
 % Features to extract
-K = 20;
+K = 50;
 % 10-Fold cross validation?
 cross_validation = false;
 % Predictor
