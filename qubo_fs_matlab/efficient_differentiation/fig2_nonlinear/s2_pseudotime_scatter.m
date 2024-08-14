@@ -91,7 +91,7 @@ title("Selected features - pseudotime prediction");
 
 f = figure;
 hold on
-for k=1:35
+for k=1:50
     h_lasso = plot(t_lasso_sort(:,k), y_lasso_fit(:,k),'LineWidth',2,'Color','k');
 end
 xlim([0 max(t)]);
@@ -105,7 +105,7 @@ f.Position(4) = 266;
 
 f=figure;
 hold on
-for k=1:35
+for k=1:50
     plot(t_qubo_sort(:,k), y_qubo_fit(:,k),'LineWidth',2,'Color', 'k');
 end
 xlim([0 max(t)]);
@@ -116,7 +116,7 @@ box on
 title('QUBO')
 
 [idx_common,~,c] = intersect(idx_lasso, idx_qubo);
-for k=1:35
+for k=1:50
     if ismember(k,c)
         plot(t_qubo_sort(:,k), y_qubo_fit(:,k),'LineWidth',0.1,'Color', [0, 0.8, 0]);
     end
