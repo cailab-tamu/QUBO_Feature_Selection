@@ -27,7 +27,7 @@ t = sce.list_cell_attributes{idx+1};
 
 toc;
 
-% Smoothin parameter
+% Smoothing parameter
 sp = 0.75;
 
 tic;
@@ -55,37 +55,6 @@ for ig = 1:ngene
     t_qubo_sort(1:ncell, ig) = t(idx);
 end
 toc;
-
-%% Plotting with Legend
-
-%{
-f = figure;
-f.Position(3)=f.Position(3)*1.4;
-hold on
-
-my_color = [0, 0.8, 0];
-
-h_lasso = plot(t_lasso_sort(:,1), y_lasso_fit(:,1),'LineWidth',3,'Color','k');
-h_qubo = plot(t_qubo_sort(:,1), y_qubo_fit(:,1),'LineWidth',1,'Color', my_color);
-
-% Plot remaining lines
-for k = 2:size(y_lasso_fit,2)
-    plot(t_lasso_sort(:,k), y_lasso_fit(:,k),'LineWidth',3,'Color','k');
-end 
-for k = 2:size(y_qubo_fit,2)
-    plot(t_qubo_sort(:,k), y_qubo_fit(:,k),'LineWidth',1,'Color', my_color);
-end 
-
-% Create legend
-legend([h_lasso, h_qubo], {'LASSO', 'QUBO'},'Location','northwest');
-
-xlim([0 max(t)]);
-% ylim([-6 6]);
-xlabel('Pseudotime')
-ylabel('Standardized Expression')
-box on
-title("Selected features - pseudotime prediction");
-%}
 
 %%
 
@@ -121,6 +90,15 @@ for k=1:50
         plot(t_qubo_sort(:,k), y_qubo_fit(:,k),'LineWidth',0.1,'Color', [0, 0.8, 0]);
     end
 end
+
+% Non-linear genes
+my_genes = ["IGFBP5" "KLK10" "MAP1B" "RGS10" "SFRP1" "TP53I11" "TRH" "TUBA1C" ...
+            "VIM" "YWHAB"]; 
+for k=1:50
+    if ismember(g_qubo(k), my_genes)
+        plot(t_qubo_sort(:,k), y_qubo_fit(:,k),'LineWidth',0.1,'Color', [1, 0, 0]);
+    end
+end
 f.Position(3) = 545;
 f.Position(4) = 266;
 
@@ -131,3 +109,98 @@ fprintf('%s, ', sort(sce.g(idx_qubo)));
 fprintf('\nCommon genes\n');
 fprintf('%s, ', sort(sce.g(idx_common)));
 fprintf('\n');
+
+%% Plotting with Legend per method
+
+%{
+f = figure;
+f.Position(3)=f.Position(3)*1.4;
+hold on
+
+my_color = [0, 0.8, 0];
+
+h_lasso = plot(t_lasso_sort(:,1), y_lasso_fit(:,1),'LineWidth',3,'Color','k');
+h_qubo = plot(t_qubo_sort(:,1), y_qubo_fit(:,1),'LineWidth',1,'Color', my_color);
+
+% Plot remaining lines
+for k = 2:size(y_lasso_fit,2)
+    plot(t_lasso_sort(:,k), y_lasso_fit(:,k),'LineWidth',3,'Color','k');
+end 
+for k = 2:size(y_qubo_fit,2)
+    plot(t_qubo_sort(:,k), y_qubo_fit(:,k),'LineWidth',1,'Color', my_color);
+end 
+
+% Create legend
+legend([h_lasso, h_qubo], {'LASSO', 'QUBO'},'Location','northwest');
+
+xlim([0 max(t)]);
+% ylim([-6 6]);
+xlabel('Pseudotime')
+ylabel('Standardized Expression')
+box on
+title("Selected features - pseudotime prediction");
+%}
+
+%% Plotting with gene legends QUBO only
+% 
+% f = figure;
+% f.Position(3)=f.Position(3)*1.4;
+% hold on;
+% 
+% colors = colormap(jet);
+% [g_common, idx_common_qubo] = intersect(g_qubo, g_lasso);
+% [ g_qubo_unique, idx_only_qubo]= setdiff(g_qubo, g_common);
+% 
+% my_idx = [11, 12, 14, 19, 21, 26, 28, 29, 30];
+% legend_text = {};
+% h_lines = []; % To store plot handles
+% 
+% % Plot all lines and create legend entries
+% ibeg = 11; 
+% iend = 15;
+% %for i = 1:length(idx_only_qubo)
+% for i = ibeg:iend
+%     k = idx_only_qubo(i);
+%     h_lines(i) = plot(t_qubo_sort(:,k), y_qubo_fit(:,k), 'LineWidth', 1, 'Color', colors(mod(i*20-1, size(colors, 1)) + 1, :));
+%     legend_text{i} = g_qubo_unique(i);
+% end
+% 
+% % Create legend
+% legend(h_lines, legend_text, 'Location', 'bestoutside');
+% 
+% xlim([0 max(t)]);
+% xlabel('Pseudotime')
+% ylabel('Standardized Expression')
+% box on
+% title("Selected features - pseudotime prediction");
+
+%% Plotting with gene legend QUBO only in ranges
+% 
+% f = figure;
+% f.Position(3)=f.Position(3)*1.4;
+% hold on;
+% colors = colormap(jet);
+% [g_common, idx_common_qubo] = intersect(g_qubo, g_lasso);
+% [ g_qubo_unique, idx_only_qubo]= setdiff(g_qubo, g_common);
+% 
+% legend_text = {};
+% h_lines = []; % To store plot handles
+% 
+% ibeg = 11; 
+% iend = 11;
+% 
+% % Plot all lines and create legend entries
+% for i = ibeg:iend
+%     k = idx_only_qubo(i);
+%     h_lines(i-ibeg+1) = plot(t_qubo_sort(:,k), y_qubo_fit(:,k), 'LineWidth', 1, 'Color', colors(mod(i*40-1, size(colors, 1)) + 1, :));
+%     legend_text{i-ibeg+1} = g_qubo_unique(i);
+% end
+% 
+% % Create legend
+% legend(h_lines, legend_text, 'Location', 'bestoutside');
+% 
+% xlim([0 max(t)]);
+% xlabel('Pseudotime')
+% ylabel('Standardized Expression')
+% box on
+% title("Selected features - pseudotime prediction");
