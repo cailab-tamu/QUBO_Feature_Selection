@@ -17,8 +17,9 @@ function [Tsol, xsol] = qfeatures_qubo_base(X, g, y, K, readr)
         load('R0.mat')
     else
         % Computing MI
-        data = [X; y];
+        data = sparse( [X; y] );
         R0 = MI_construction(data);
+        clear data X y;
         save('R0.mat', 'R0', '-v7.3');
     end
     time_mi = toc;
