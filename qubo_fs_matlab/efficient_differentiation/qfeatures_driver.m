@@ -15,11 +15,11 @@ X = full(sc_transform(X, "type","PearsonResiduals"));
 
 % Features to extract
 K = 50;
-
-% Predictor
-cell_type_target = "monocle3_pseudotime";
 % 10-Fold cross validation?
 cross_validation = true;
+% Predictor
+cell_type_target = "monocle3_pseudotime";
+
 % Number of genes
 ngenes = length( sce.g );
 
@@ -31,11 +31,12 @@ y = y';
 
 fprintf("Final matrix size %d , %d \n",size(X));
 
-% QUBO feature selection
+
 if cross_validation
-    [errors, selectedGenesList, selectedGenes0, eners, ener_per_fit_all, ... 
-                 intersections] = cross_validation_qubo( X, g, y, K);
-else 
+    [training_info, selectedGenes0] = cross_validation_qubo( X, g, y, K);
+    save('training_info.mat','training_info','-v7.3')
+    writematrix(selectedGenes0','qubo_features_train.txt');
+else
     % readR false will recompute R0 (MI)
     readR = false;
     Tqubo = qfeatures_qubo_base( X, g, y, K, readR);
