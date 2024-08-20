@@ -3,7 +3,7 @@
 my_path = "../../../src-v0.2";
 addpath(genpath(my_path));
 
-path="D1_1f_G2M_1000g_Monocle.mat";
+path="Data_hESC_EC_day1_5000g.mat";
 data  = load(path);
 sce = data.sce;
 clear data;
@@ -31,13 +31,13 @@ y = y';
 
 fprintf("Final matrix size %d , %d \n",size(X));
 
-% readR false will recompute R0 (MI)
-readR = false;
-Tqubo = qfeatures_qubo_base( X, g, y, K, readR);
 
 if cross_validation
-    [errors, selectedGenesList, selectedGenes0, eners, ener_per_fit_all, ... 
-                 intersections] = cross_validation_qubo( X, g, y, K);
+    [training_info, selectedGenes0] = cross_validation_qubo( X, g, y, K);
+else
+    % readR false will recompute R0 (MI)
+    readR = false;
+    Tqubo = qfeatures_qubo_base( X, g, y, K, readR);
 end
 
 Tml = mlfeatures_base(X, g, y, K, 1);

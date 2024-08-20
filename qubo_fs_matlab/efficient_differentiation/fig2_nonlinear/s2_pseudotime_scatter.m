@@ -91,14 +91,14 @@ for k=1:50
     end
 end
 
-% Non-linear genes
-my_genes = ["IGFBP5" "KLK10" "MAP1B" "RGS10" "SFRP1" "TP53I11" "TRH" "TUBA1C" ...
-            "VIM" "YWHAB"]; 
-for k=1:50
-    if ismember(g_qubo(k), my_genes)
-        plot(t_qubo_sort(:,k), y_qubo_fit(:,k),'LineWidth',0.1,'Color', [1, 0, 0]);
-    end
-end
+% % Non-linear genes
+% my_genes = ["IGFBP5" "KLK10" "MAP1B" "RGS10" "SFRP1" "TP53I11" "TRH" "TUBA1C" ...
+%             "VIM" "YWHAB"]; 
+% for k=1:50
+%     if ismember(g_qubo(k), my_genes)
+%         plot(t_qubo_sort(:,k), y_qubo_fit(:,k),'LineWidth',0.1,'Color', [1, 0, 0]);
+%     end
+% end
 f.Position(3) = 545;
 f.Position(4) = 266;
 
@@ -110,6 +110,37 @@ fprintf('\nCommon genes\n');
 fprintf('%s, ', sort(sce.g(idx_common)));
 fprintf('\n');
 
+
+
+%% Non-linear genes Possible figure 3
+% Non-linear genes
+my_genes = ["IGFBP5" "KLK10" "MAP1B" "RGS10" "SFRP1" "TP53I11" "TRH" "TUBA1C" "VIM" "YWHAB"]; 
+
+% Create a 2x5 figure
+figure;
+
+for i = 1:length(my_genes)
+    subplot(2, 5, i); % Create subplot
+    hold on;
+
+    % Plot all QUBO genes in gray
+    for k = 1:50
+        plot(t_qubo_sort(:,k), y_qubo_fit(:,k), 'LineWidth', 2, 'Color', [0.35, 0.35, 0.35]);
+        %plot(t_qubo_sort(:,k), y_qubo_fit(:,k), 'LineWidth', 2, 'Color', 'k');
+
+    end
+
+    % Plot the selected gene in red
+    gene_index = find(strcmp(g_qubo, my_genes(i)));
+    plot(t_qubo_sort(:,gene_index), y_qubo_fit(:,gene_index), 'LineWidth', 1, 'Color', 'r');
+
+    xlim([-0.06 max(t)+0.04]);
+    ylim([-2 4]);
+    %xlabel('Pseudotime')
+    %ylabel('Standardized Expression')
+    box on
+    title(sprintf('%s', my_genes(i)));
+end
 %% Plotting with Legend per method
 
 %{
@@ -142,7 +173,7 @@ title("Selected features - pseudotime prediction");
 %}
 
 %% Plotting with gene legends QUBO only
-% 
+
 % f = figure;
 % f.Position(3)=f.Position(3)*1.4;
 % hold on;

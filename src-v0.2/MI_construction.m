@@ -8,7 +8,7 @@ function MI_mat = MI_construction(data)
     % save('R0.mat', 'R0', '-v7.3');
 
     % Data is count matrix with genes in rows and cells in columns
-    data = full(data);
+    data = sparse(data);
 
     % transpose for efficient access (vectorization) across observations
     data = transpose(data);
@@ -21,7 +21,8 @@ function MI_mat = MI_construction(data)
         tmp = zeros(ngene,1);
         for ig = jg + 1: ngene
             % Computing pair MI with binning distribution
-            tmp(ig) = BinPairMI( data(1:nobs,jg), data(1:nobs,ig) );
+            tmp(ig) = BinPairMI( full(data(1:nobs,jg)), ...
+                                 full(data(1:nobs,ig)) );
         end
         MI_mat(jg,:) = tmp;
     end
