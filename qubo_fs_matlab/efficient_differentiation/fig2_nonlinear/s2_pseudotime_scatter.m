@@ -117,30 +117,37 @@ fprintf('\n');
 my_genes = ["IGFBP5" "KLK10" "MAP1B" "RGS10" "SFRP1" "TP53I11" "TRH" "TUBA1C" "VIM" "YWHAB"]; 
 
 % Create a 2x5 figure
-figure;
+f=figure;
 
-for i = 1:length(my_genes)
-    subplot(2, 5, i); % Create subplot
+for idx = 1:length(my_genes)
+    % subplot(2, 5, i); % Create subplot
+    nexttile;
     hold on;
 
     % Plot all QUBO genes in gray
     for k = 1:50
-        plot(t_qubo_sort(:,k), y_qubo_fit(:,k), 'LineWidth', 2, 'Color', [0.35, 0.35, 0.35]);
+        plot(t_qubo_sort(:,k), y_qubo_fit(:,k), ...
+            'LineWidth', 0.5, 'Color', 'k'); %[0.35, 0.35, 0.35]);
         %plot(t_qubo_sort(:,k), y_qubo_fit(:,k), 'LineWidth', 2, 'Color', 'k');
 
     end
 
     % Plot the selected gene in red
-    gene_index = find(strcmp(g_qubo, my_genes(i)));
-    plot(t_qubo_sort(:,gene_index), y_qubo_fit(:,gene_index), 'LineWidth', 1, 'Color', 'r');
+    gene_index = find(strcmp(g_qubo, my_genes(idx)));
+    plot(t_qubo_sort(:,gene_index), ...
+        y_qubo_fit(:,gene_index), 'LineWidth', 2, ...
+        'Color', 'r');
 
-    xlim([-0.06 max(t)+0.04]);
-    ylim([-2 4]);
+    %xlim([-0.06 max(t)+0.04]);
+    %ylim([-2 4]);
+    
     %xlabel('Pseudotime')
     %ylabel('Standardized Expression')
     box on
-    title(sprintf('%s', my_genes(i)));
+    title(sprintf('%s', my_genes(idx)));
 end
+f.Position(3:4)=[1364 420];
+
 %% Plotting with Legend per method
 
 %{
