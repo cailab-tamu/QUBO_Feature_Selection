@@ -114,7 +114,9 @@ fprintf('\n');
 
 %% Non-linear genes Possible figure 3
 % Non-linear genes
-my_genes = ["IGFBP5" "KLK10" "MAP1B" "RGS10" "SFRP1" "TP53I11" "TRH" "TUBA1C" "VIM" "YWHAB"]; 
+% my_genes = ["IGFBP5" "KLK10" "MAP1B" "RGS10" "SFRP1" "TP53I11" "TRH" "TUBA1C" "VIM" "YWHAB"]; 
+% my_genes = ["IGFBP5" "MAP1B" "KLK10" "TP53I11" "TRH" "RGS10" "SFRP1" "TUBA1C" "VIM" "YWHAB"];
+my_genes = ["MAP1B" "KLK10" "TRH" "IGFBP5"  "TP53I11" "RGS10" "SFRP1" "TUBA1C" "VIM" "YWHAB"];
 
 % Create a 2x5 figure
 f=figure;
