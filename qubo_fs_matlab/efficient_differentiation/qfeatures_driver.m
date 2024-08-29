@@ -1,6 +1,6 @@
 % Set path for Linux
 %my_path  = "/scratch/user/ssromerogon/scGEAToolbox";
-my_path = "../../../src-v0.2";
+my_path = "../../src-v0.2";
 addpath(genpath(my_path));
 
 path="Data_hESC_EC_day1_5000g.mat";
@@ -16,7 +16,7 @@ X = full(sc_transform(X, "type","PearsonResiduals"));
 % Features to extract
 K = 50;
 % 10-Fold cross validation?
-cross_validation = true;
+cross_validation = false;
 % Predictor
 cell_type_target = "monocle3_pseudotime";
 
