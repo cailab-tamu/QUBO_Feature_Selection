@@ -1,0 +1,12 @@
+name: dwave
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - numpy=1.26.4
+  - pandas=2.2.2
+  - pip
+  - pip:
+    - dwave-ocean-sdk==6.10.0
+  - ipykernel
