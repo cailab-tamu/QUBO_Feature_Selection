@@ -55,16 +55,17 @@ function [Tsol, xsol] = qfeatures_qubo_base(X, g, y, K, readr)
     [~, sort_idx] = sort(global_rank, 'ascend');
     % Re-sort original features
     gtmp = g(sort_idx);
-    jdx = xsol.BestX(sort_idx) == 1;
-    sol_genes = gtmp(jdx);
+    featureIndices = xsol.BestX(sort_idx) == 1;
+    selectedGenes = gtmp(featureIndices);
 
     % Make a row for features (Tsol requires it)
-    nx = size(sol_genes, 1);
+    nx = size(selectedGenes, 1);
     if nx > 1
-        sol_genes = gtmp(jdx)';
+        featureIndices = featureIndices';
+        selectedGenes = gtmp(featureIndices)';
     end
 
     fprintf("QUBO FS alpha solver time: %f \n", time_zerof);
 
-    Tsol = table(sol_genes, time_mi, time_zerof, fval, alphasol);
+    Tsol = table(selectedGenes, featureIndices, time_mi, time_zerof, fval, alphasol);
 end
