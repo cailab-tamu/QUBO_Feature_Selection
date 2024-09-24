@@ -18,7 +18,10 @@ function [Tsol, xsol] = qfeatures_qubo_base(X, g, y, K, readr)
     else
         % Computing MI
         data = sparse( [X; y] );
-        R0 = MI_construction(data);
+        % Non memory efficient
+        %R0 = MI_construction(data);
+        % Memory efficient
+        R0 = MI_block_construction(data);
         clear data X y;
         save('R0.mat', 'R0', '-v7.3');
     end
