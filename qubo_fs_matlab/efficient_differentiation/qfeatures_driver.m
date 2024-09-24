@@ -59,12 +59,12 @@ save(strcat(fname1,'.mat'),'Tml','-v7.3')
 % Writting features
 fname = "featues";
 ftext_name = strcat(fname, fname0,".txt" );
-writematrix(Tqubo.sol_genes','qubo_features.txt');
-writematrix(Tml.sol_genes_lasso',"lasso_features.txt");
+writematrix(Tqubo.selectedGenes','qubo_features.txt');
+writematrix(Tml.selectedGenes',"lasso_features.txt");
 %writematrix(Tml.sol_genes_relief',"relief_features.txt");
 
 % Intersection of lasso with qubo
-inter_genes = intersect(Tqubo.sol_genes, Tml.sol_genes_lasso, 'stable');
+inter_genes = intersect(Tqubo.selectedGenes, Tml.selectedGenes, 'stable');
 
 %% Saving matrices for d-wave
 load('R0.mat');
