@@ -62,12 +62,12 @@ function [Tsol, xsol] = qfeatures_qubo_base(X, g, y, K, readr)
     selectedGenes = gtmp(featureIndices);
 
     % Make a row for features (Tsol requires it)
-    nx = size(selectedGenes, 1);
-    if nx > 1
-        featureIndices = featureIndices';
+    if size(selectedGenes, 1) > 1
         selectedGenes = gtmp(featureIndices)';
     end
-
+    if size(featureIndices, 1) > 1
+        featureIndices = featureIndices';
+    end
     fprintf("QUBO FS alpha solver time: %f \n", time_zerof);
 
     Tsol = table(selectedGenes, featureIndices, time_mi, time_zerof, fval, alphasol);

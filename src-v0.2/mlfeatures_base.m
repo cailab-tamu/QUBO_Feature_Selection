@@ -71,6 +71,8 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode, alpha)
     % Ensure sol_genes is in the correct orientation
     if size(sol_genes, 1) > 1
         sol_genes = sol_genes';
+    end
+    if size(selectedFeatures, 1) > 1
         selectedFeatures = selectedFeatures';
     end
 
