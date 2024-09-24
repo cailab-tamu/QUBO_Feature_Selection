@@ -18,8 +18,9 @@ X = X';
 Y = Y';
 Tqubo = qfeatures_qubo_base(X, g, Y, K, false);
 
-Tml  = mlfeatures_base(X, g, Y, K, 2);
+Tml  = mlfeatures_base(X, g, Y, K, 1);
+Tml2  = mlfeatures_base(X, g, Y, K, 2);
 
-inter_feat_qubo = intersect(Tqubo.sol_genes, source_f)
-inter_feat_lasso = intersect(Tml.sol_genes_lasso, source_f)
-inter_feat_relief = intersect(Tml.sol_genes_relief, source_f)
+inter_feat_qubo = intersect(Tqubo.selectedGenes, source_f)
+inter_feat_lasso = intersect(Tml.selectedGenes, source_f)
+inter_feat_relief = intersect(Tml2.selectedGenes, source_f)
