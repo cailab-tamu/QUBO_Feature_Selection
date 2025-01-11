@@ -5,7 +5,7 @@ function MI_mat = MI_block_construction(data, data2, comp_ii )
     %               data = [X; y]; (gene by (cell basis + target) )
     % data2 ======> (Optional)
     %               Contains X2 count matrix and y target as follows
-    %               data = [X2; y2]; (gene by (cell basis + target) )
+    %               data = [X2; y2]; (gene by cell basis + target by cell basis) )
     % comp_ii ====> Compute the ig-ig diagonal terms? true/false
     % OUTPUT:
     % MI_mat =====> Mutual 
@@ -73,8 +73,8 @@ function MI_mat = MI_block_construction(data, data2, comp_ii )
     mi_time = toc;
     fprintf("MI time %f \n", mi_time);
 
-    % Copy upper triangular to lower triangular
-    if ~comp_ii
+    % Copy upper triangular to lower triangular if it is square matrix
+    if ~comp_ii && ngene2 == ngene
         MI_mat = MI_mat + triu(MI_mat, 1)';
     end
 end

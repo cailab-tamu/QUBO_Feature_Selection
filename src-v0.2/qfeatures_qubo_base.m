@@ -55,7 +55,7 @@ function [Tsol, xsol] = qfeatures_qubo_base(X, g, y, K, readr)
     % Function value per feature accoring best solution and Q matrix
     global_rank = Q * xsol.BestX;
     % Obtain top most important features
-    [~, sort_idx] = sort(global_rank, 'ascend');
+    [global_rank, sort_idx] = sort(global_rank, 'ascend');
     % Re-sort original features
     gtmp = g(sort_idx);
     featureIndices = xsol.BestX(sort_idx) == 1;
@@ -68,7 +68,10 @@ function [Tsol, xsol] = qfeatures_qubo_base(X, g, y, K, readr)
     if size(featureIndices, 1) > 1
         featureIndices = featureIndices';
     end
+    if size(global_rank, 1) > 1
+        global_rank = global_rank';
+    end
     fprintf("QUBO FS alpha solver time: %f \n", time_zerof);
 
-    Tsol = table(selectedGenes, featureIndices, time_mi, time_zerof, fval, alphasol);
+    Tsol = table(selectedGenes, featureIndices, global_rank, time_mi, time_zerof, fval, alphasol);
 end

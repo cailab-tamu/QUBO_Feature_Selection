@@ -44,7 +44,8 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode, alpha)
             % Score value from LASSO
             coef = B(:, idxLambda1SE);
             % Select top K features
-            [~, sorted_idx] = sort(abs(coef), 'descend');
+            [abs_coef, sorted_idx] = sort(abs(coef), 'descend');
+            abs_coef = abs_coef(1:K);
             selectedFeatures = sorted_idx(1:K);
             sol_genes = g(selectedFeatures);
 
@@ -54,20 +55,32 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode, alpha)
             [B, FitInfo] = lasso(X', y, 'CV', 10, 'Alpha', alpha);
             idxLambda1SE = FitInfo.Index1SE;
             coef = B(:, idxLambda1SE);
-            [~, sorted_idx] = sort(abs(coef), 'descend');
+            [abs_coef, sorted_idx] = sort(abs(coef), 'descend');
+            abs_coef = abs_coef(1:K);
             selectedFeatures = sorted_idx(1:K);
             sol_genes = g(selectedFeatures);
 
         case 3 
             disp('ReliefF feature selection activated');
             nearest_n = 10;
-            [rankedFeatures, ~] = relieff(X', y', nearest_n);
+            [rankedFeatures, coef] = relieff(X', y', nearest_n);
+            abs_coef = coef(1:K);
             selectedFeatures = rankedFeatures(1:K);
             sol_genes = g(selectedFeatures);
     end
     time = toc;
     fprintf("FS time: %f \n", time);
 
+    % Check the non-zero features 
+    idx = abs_coef > 0;
+    sol_genes = sol_genes(idx);
+    selectedFeatures = selectedFeatures(idx);
+    abs_coef = abs_coef(idx);
+
+    nsel = sum(idx);
+    if nsel < K 
+        fprintf("Not able to select %d genes, providing %d \n", K, nsel);
+    end
     % Ensure sol_genes is in the correct orientation
     if size(sol_genes, 1) > 1
         sol_genes = sol_genes';
@@ -75,9 +88,13 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode, alpha)
     if size(selectedFeatures, 1) > 1
         selectedFeatures = selectedFeatures';
     end
+    if size(abs_coef, 1) > 1
+        abs_coef = abs_coef';
+    end
 
     % Create output table
-    Tsol = table(sol_genes, selectedFeatures, time, ...
-         'VariableNames', {'selectedGenes', 'featureIndices', 'computationTime'});
+    Tsol = table(sol_genes, selectedFeatures, abs_coef, time, ...
+         'VariableNames', {'selectedGenes', 'featureIndices', ...
+         'abs_bcoef', 'computationTime'});
 end
 
