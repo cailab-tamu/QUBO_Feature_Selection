@@ -14,7 +14,7 @@ X = full(sce.X);
 X = full(sc_transform(X, "type","PearsonResiduals"));
 
 % Features to extract
-K = 50;
+K = 100;
 % 10-Fold cross validation?
 cross_validation = false;
 % Predictor
@@ -30,7 +30,6 @@ y = sce.list_cell_attributes{idx*2};
 y = y';
 
 fprintf("Final matrix size %d , %d \n",size(X));
-
 
 if cross_validation
     [training_info, selectedGenes0] = cross_validation_qubo( X, g, y, K);
@@ -65,6 +64,10 @@ writematrix(Tml.selectedGenes',"lasso_features.txt");
 
 % Intersection of lasso with qubo
 inter_genes = intersect(Tqubo.selectedGenes, Tml.selectedGenes, 'stable');
+
+% Energy landscape
+load("R0.mat")
+energy_landscape(R0, Tqubo.selectedGenes, Tml.selectedGenes, g, K, Tqubo.alphasol);
 
 %% Saving matrices for d-wave
 load('R0.mat');
