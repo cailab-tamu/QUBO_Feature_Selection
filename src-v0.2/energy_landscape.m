@@ -1,4 +1,4 @@
-function energy_landscape(R0, qubo_genes, lasso_genes, genes, K, alphasol)
+function energy_landscape(R0, qubo_genes, lasso_genes, genes, K, alphasol, save_path)
     % Calculate the energy landscape for QUBO and LASSO solutions
     % Inputs:
     % R0: Initial redundancy matrix with importance vector as the last row
@@ -7,6 +7,7 @@ function energy_landscape(R0, qubo_genes, lasso_genes, genes, K, alphasol)
     % genes: Complete list of genes
     % K: Number of genes
     % alphasol: Trained alpha solution
+    % save_path: Path to save the image (optional)
 
     % Redundancy matrix (scaled)
     R = R0(1:end-1, 1:end-1) / (K - 1);
@@ -28,21 +29,24 @@ function energy_landscape(R0, qubo_genes, lasso_genes, genes, K, alphasol)
     ener_per_feat_lasso = sort(ener_per_feat_lasso); % Sort energies
 
     % Cumulative energy calculations
-    sum_ener_qubo = cumsum(ener_per_feat_qubo(1:K));
-    sum_ener_lasso = cumsum(ener_per_feat_lasso(1:K));
-
+    nsolq = min(K,length(qubo_genes));
+    sum_ener_qubo = cumsum(ener_per_feat_qubo(1:nsolq));
+    nsoll = min(K,length(lasso_genes));
+    sum_ener_lasso = cumsum(ener_per_feat_lasso(1:nsoll));
+    
     % Plot the energy landscapes
-    range = 1:K;
+    range1 = 1:nsolq;
 
     % Plot lines with colors
-    plot(range, sum_ener_qubo, '-g', 'DisplayName', 'QUBO'); % Green line
+    plot(range1, sum_ener_qubo, '-g', 'DisplayName', 'QUBO'); % Green line
     hold on;
-    plot(range, sum_ener_lasso, '-k', 'DisplayName', 'LASSO'); % Black line
+    range2 = 1:nsoll;
+    plot(range2, sum_ener_lasso, '-k', 'DisplayName', 'LASSO'); % Black line
 
     % Add circles to each data point
-    plot(range, sum_ener_qubo, 'og', 'MarkerSize', 3,'MarkerFaceColor', 'g', ...
+    plot(range1, sum_ener_qubo, 'og', 'MarkerSize', 3,'MarkerFaceColor', 'g', ...
          'DisplayName', 'QUBO Points'); % Green circles
-    plot(range, sum_ener_lasso, 'ok','MarkerSize', 3, 'MarkerFaceColor', 'k', ...
+    plot(range2, sum_ener_lasso, 'ok','MarkerSize', 3, 'MarkerFaceColor', 'k', ...
         'DisplayName', 'LASSO Points'); % Black circles 
 
     % Labels and legend
@@ -53,4 +57,9 @@ function energy_landscape(R0, qubo_genes, lasso_genes, genes, K, alphasol)
     grid on;
     hold off;
 
+    % Save the plot to a file if save_path is provided
+    if nargin > 6 && ~isempty(save_path)
+        saveas(gcf, save_path);  % Save the figure to the specified path
+        fprintf('Plot saved to %s\n', save_path);
+    end
 end

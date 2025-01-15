@@ -1,38 +1,26 @@
-function [ener_test, training_accu] = ifold_test(Tqubo, sa_sol, X_test, y_test, K)
+function [ener_accu, ener_embed_accu] = ifold_test(Tqubo_train, sa_train, sa0, Q);
     % Obtain QUBO function value, build energy landscape
     % Loading MI
 
-    tic;
-    % Construct MI for test set
-    data = [X_test; y_test];
-    R0 = MI_construction(data);
-    time_mi = toc;
-    fprintf("MI construction (ifold_test) time: %f \n", time_mi);
+    % Asses the CV selection in the original cost function Q
+    evec = Q * sa_train.BestX;
+    ener_train = sa_train.BestX' * evec;
+ 
+    % Asses the problem (all obs) selection in the original cost function Q
+    evec = Q * sa0.BestX;
+    ener0 = sa0.BestX' * evec;
 
-    %fprintf("Looking for %d genes \n", K);
-    % Redundancy matrix
-    R = R0(1:end-1, 1:end-1) / (K - 1);
-    % Importance vector
-    J = R0(end, 1:end-1);
+    % Local energy solution for the training set
+    ener_local = Tqubo_train.fval;
 
-    % Re-compute Q  (balance of R and J) with trained alpha
-    Q = (1 - Tqubo.alphasol) * R - Tqubo.alphasol * diag(J);
-    
-    % Function value per feature accoring training solution and Q matrix
-    ener_per_feat = Q * sa_sol.BestX;
+    % Measure deviation from annealed solution embedded in the original
+    % cost function 
+    error_abs_pct = abs( (ener_train - ener0) / ener0);
+    ener_embed_accu = 100*(1 - error_abs_pct);  
 
-    % Obtain top most important features
-    % [ener_per_feat, sort_idx] = sort(ener_per_feat, 'ascend');
-    % jdx = sa_sol.BestX(sort_idx) == 1;
-    % ener_per_g_test = ener_per_feat(jdx);
-
-    % Energy value of training solution in test set
-    ener_test = sa_sol.BestX' *ener_per_feat;
-    % Error within test set and training set
-    error_abs_pct = abs( (ener_test - Tqubo.fval) / Tqubo.fval);
-    training_accu = 100*(1 - error_abs_pct);  
-
-    % mdl = fitlm(X_test_selected, y); % or this
-    %fprintf('Training Accuracy (%%) %f  \n', training_accu);
+    % Measure deviation from annealed solution embedded in the original
+    % cost function 
+    error_abs_pct = abs( (ener_local - ener0) / ener0);
+    ener_accu = 100*(1 - error_abs_pct);  
 
 end
