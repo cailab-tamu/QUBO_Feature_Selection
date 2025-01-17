@@ -35,6 +35,7 @@ function MI_mat_block = MI_block(data_block, data_block2, mode, comp_ii)
     MI_mat_block = zeros(ngene, ngene2);
     % MI across data's rows (Computing upper triangular) in parallel 
     if mode == 1
+        % mode 1 is upper triangular elements along block diagonals
         parfor ig = 1:ngene
             tmp = zeros(ngene2, 1);
             for jg = ig + offset:ngene2 % Skip the ig-ig term
@@ -45,6 +46,7 @@ function MI_mat_block = MI_block(data_block, data_block2, mode, comp_ii)
             MI_mat_block(ig, :) = tmp;
         end
     else
+       % mode 2 is full-block elements above block diagonals
         parfor ig = 1:ngene
             tmp = zeros(ngene2,1);
             for jg = 1:ngene2

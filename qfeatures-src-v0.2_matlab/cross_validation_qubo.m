@@ -7,13 +7,28 @@ function [training_info, selectedGenes0, avg_training_accu] = cross_validation_q
 
     fprintf('Running full set...\n');
     % Run QUBO feature selection on the full dataset
-    [Tqubo_train, ~] = qfeatures_qubo_base(X, g, y, K, readR);
-    selectedGenes0 = Tqubo_train.sol_genes;
+    [Tqubo0, sa0] = qfeatures_qubo_base(X, g, y, K, readR);
+    selectedGenes0 = Tqubo0.selectedGenes;
+
+    % -------------- Cost function of real problem-------------------
+    load("R0.mat");
+    % Redundancy matrix
+    R = R0(1:end-1, 1:end-1) / (K - 1);
+    % Importance vector
+    J = R0(end, 1:end-1);
+    Q = (1 - Tqubo0.alphasol) * R - Tqubo0.alphasol * diag(J);
     
+    % This only for checking cost function
+    %evec = Q * xsol.BestX;
+    %ener0 = xsol.BestX'*evec;
+    %assert(ener0 == Tqubo.fval);
+    % --------------------------------------------------------------
+
     % Store selected genes for each fold
     training_info = cell(nFolds, 1);
 
     avg_training_accu = 0.0;
+    avg_training_accu_loc = 0.0;
     for i = 1:nFolds
         fprintf('Running fold %d/%d\n', i, nFolds);
         
@@ -32,13 +47,15 @@ function [training_info, selectedGenes0, avg_training_accu] = cross_validation_q
         [Tqubo_train, sa_train] = qfeatures_qubo_base(X_train, g, y_train, K, readR);
 
         % Store the selected genes for this fold
-        genesTraining = Tqubo_train.sol_genes;
+        genesTraining = Tqubo_train.selectedGenes;
 
         % Evaluate the model on the test set
-        [~, test_accu] = ifold_test(Tqubo_train, sa_train, X_test, y_test, K);
-        fprintf("*****Test Accuracy (%%): %f \n", test_accu);
+        [ener_accu, ener_embed_accu]= ifold_test(Tqubo_train, sa_train, sa0, Q);
+        fprintf("*****Test Accuracy (%%): %f \n", ener_embed_accu);
 
-        avg_training_accu = test_accu + avg_training_accu;
+        avg_training_accu = ener_embed_accu + avg_training_accu;
+        avg_training_accu_loc = ener_accu + avg_training_accu_loc;
+
         % Compute intersection of each fold's selected genes with selectedGenes0
         inter_genes = intersect(genesTraining, selectedGenes0);
         ninter = length(inter_genes);
@@ -50,10 +67,11 @@ function [training_info, selectedGenes0, avg_training_accu] = cross_validation_q
 
         % Store fold-specific information
         training_info{i} = table(i, genesTraining, Tqubo_train.alphasol, ...
-                                 inter_genes, ninter, test_accu);
+                                 inter_genes, ninter, ener_accu, ener_embed_accu);
         training_info{i}.Properties.VariableNames = {'I-train', 'Genes_trained',...
                                                      'Alpha_trained', 'Intersected_genes', ...
-                                                     'No_intersected_genes', 'Test_accuracy(%)'};
+                                                     'No_intersected_genes', ...
+                                                     'Test_accuracy_local(%)', 'Test_accuracy(%)'};
     end
     avg_training_accu = avg_training_accu / nFolds;
     fprintf("Average training accuracy : %f (%%) \n", avg_training_accu);

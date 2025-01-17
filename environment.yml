@@ -1,0 +1,15 @@
+name: dwave
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - numpy=1.24.2
+  - pandas=2.2.3
+  - scanpy
+  - scipy
+  - joblib
+  - pip
+  - ipykernel
+  - pip:
+    - dwave-ocean-sdk==6.10.0

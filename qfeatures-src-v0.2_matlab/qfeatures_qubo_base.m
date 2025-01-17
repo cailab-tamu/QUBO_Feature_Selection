@@ -59,11 +59,13 @@ function [Tsol, xsol] = qfeatures_qubo_base(X, g, y, K, readr)
     % Re-sort original features
     gtmp = g(sort_idx);
     featureIndices = xsol.BestX(sort_idx) == 1;
+    % featureIndices = find( xsol.BestX(sort_idx) == 1;)
     selectedGenes = gtmp(featureIndices);
+    featureIndices = ismember( g, selectedGenes);
 
     % Make a row for features (Tsol requires it)
     if size(selectedGenes, 1) > 1
-        selectedGenes = gtmp(featureIndices)';
+        selectedGenes = selectedGenes';
     end
     if size(featureIndices, 1) > 1
         featureIndices = featureIndices';

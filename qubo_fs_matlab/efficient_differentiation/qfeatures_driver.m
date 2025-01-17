@@ -14,14 +14,13 @@ X = full(sce.X);
 X = full(sc_transform(X, "type","PearsonResiduals"));
 
 % Features to extract
-K = 50;
-% 10-Fold cross validation?
-cross_validation = false;
+K = 50; 
+
 % Predictor
 cell_type_target = "monocle3_pseudotime";
 
 % Number of genes
-ngenes = length( sce.g );
+ngenes = length(g);
 
 % Preparing target predictor y from pseudo-time values per cell
 idx = find(contains(sce.list_cell_attributes(1:2:end), cell_type_target));
@@ -31,16 +30,9 @@ y = y';
 
 fprintf("Final matrix size %d , %d \n",size(X));
 
-
-if cross_validation
-    [training_info, selectedGenes0] = cross_validation_qubo( X, g, y, K);
-    save('training_info.mat','training_info','-v7.3')
-    writematrix(selectedGenes0','qubo_features_train.txt');
-else
-    % readR false will recompute R0 (MI)
-    readR = false;
-    Tqubo = qfeatures_qubo_base( X, g, y, K, readR);
-end
+% readR false will recompute R0 (MI)
+readR = false;
+Tqubo = qfeatures_qubo_base( X, g, y, K, readR);
 
 Tml = mlfeatures_base(X, g, y, K, 1);
 
@@ -64,18 +56,23 @@ writematrix(Tml.selectedGenes',"lasso_features.txt");
 %writematrix(Tml.sol_genes_relief',"relief_features.txt");
 
 % Intersection of lasso with qubo
-inter_genes = intersect(Tqubo.selectedGenes, Tml.selectedGenes, 'stable');
+%inter_genes = intersect(Tqubo.selectedGenes, Tml.selectedGenes, 'stable');
+
+% Energy landscape
+load("R0.mat")
+energy_landscape(R0, Tqubo.selectedGenes, Tml.selectedGenes, g, K,...
+                 Tqubo.alphasol, 'energy_landscape.png');
 
 %% Saving matrices for d-wave
-load('R0.mat');
-
-R = R0(1:end-1,1:end-1)/(K-1);
-J = R0(end,1:end-1);
-alpha = Tqubo.alphasol;
-
-[~,qubo_sol ] = howmany(alpha,R,J);
-
-% QUBO matrix (utilized for D-WAVE codes)
-Q = (1-alpha)*R - alpha*diag(J);
-writematrix(Q,'qubo_matrix.csv')
-writematrix(g,'genes.csv')
+% load('R0.mat');
+% 
+% R = R0(1:end-1,1:end-1)/(K-1);
+% J = R0(end,1:end-1);
+% alpha = Tqubo.alphasol;
+% 
+% [~,qubo_sol ] = howmany(alpha,R,J);
+% 
+% % QUBO matrix (utilized for D-WAVE codes)
+% Q = (1-alpha)*R - alpha*diag(J);
+% writematrix(Q,'qubo_matrix.csv')
+% writematrix(g,'genes.csv')
