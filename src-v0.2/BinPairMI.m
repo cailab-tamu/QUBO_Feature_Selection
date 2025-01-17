@@ -8,17 +8,22 @@ function MI = BinPairMI(x, y)
 
     % Estimate joint probability distribution with MATLAB automatic binning
     [joint_counts, ~, ~] = histcounts2(x, y);
-    joint_prob = joint_counts ./ sum(joint_counts(:));
-    
-    % Estimate marginal probabilities
-    x_marginal = sum(joint_prob, 2);
-    y_marginal = sum(joint_prob, 1);
-    
+  
+    % Try to avoid singularities with this and eps0
+    nconts = sum(joint_counts(:));
+    if nconts == 0
+        MI = 0;
+        return;
+    end
+
     % Handle zeros (add eps for numerical stability)
     eps0 = eps(realmin('single'));
-    joint_prob = joint_prob + eps0;
-    x_marginal = x_marginal + eps0;
-    y_marginal = y_marginal + eps0;
+
+    joint_prob = joint_counts ./ nconts + eps0;
+   
+    % Estimate marginal probabilities
+    x_marginal = sum(joint_prob, 2) + eps0;
+    y_marginal = sum(joint_prob, 1) + eps0;
     
     % Calculate entropy terms
     entropy_xy = -sum(joint_prob(:) .* log2(joint_prob(:)) );

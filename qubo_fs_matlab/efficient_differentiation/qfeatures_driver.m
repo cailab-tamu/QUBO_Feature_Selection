@@ -15,8 +15,7 @@ X = full(sc_transform(X, "type","PearsonResiduals"));
 
 % Features to extract
 K = 50; 
-% 10-Fold cross validation?
-cross_validation = false;
+
 % Predictor
 cell_type_target = "monocle3_pseudotime";
 
