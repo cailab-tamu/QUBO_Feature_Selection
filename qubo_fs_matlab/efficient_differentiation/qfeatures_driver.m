@@ -11,10 +11,11 @@ clear data;
 % Pre-processing 
 g = sce.g;
 X = full(sce.X);
+%X = sc_norm(X);
 X = full(sc_transform(X, "type","PearsonResiduals"));
 
 % Features to extract
-K = 50; 
+K = 20; 
 
 % Predictor
 cell_type_target = "monocle3_pseudotime";
@@ -60,8 +61,8 @@ writematrix(Tml.selectedGenes',"lasso_features.txt");
 
 % Energy landscape
 load("R0.mat")
-energy_landscape(R0, Tqubo.selectedGenes, Tml.selectedGenes, g, K,...
-                 Tqubo.alphasol, 'energy_landscape.png');
+energy_path(R0, Tqubo.selectedGenes, Tml.selectedGenes, g, K,...
+                 Tqubo.alphasol, 'energy_path.png');
 
 %% Saving matrices for d-wave
 % load('R0.mat');
