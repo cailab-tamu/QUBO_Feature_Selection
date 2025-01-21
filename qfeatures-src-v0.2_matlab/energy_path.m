@@ -1,4 +1,4 @@
-function energy_landscape(R0, qubo_genes, lasso_genes, genes, K, alphasol, save_path)
+function energy_path(R0, qubo_genes, lasso_genes, genes, K, alphasol, save_path)
     % Calculate the energy landscape for QUBO and LASSO solutions
     % Inputs:
     % R0: Initial redundancy matrix with importance vector as the last row
@@ -53,7 +53,7 @@ function energy_landscape(R0, qubo_genes, lasso_genes, genes, K, alphasol, save_
     xlabel('Number of Features');
     ylabel('Cumulative Energy');
     legend show;
-    title('Energy Landscape Comparison');
+    title('Energy Path Comparison');
     grid on;
     hold off;
 
