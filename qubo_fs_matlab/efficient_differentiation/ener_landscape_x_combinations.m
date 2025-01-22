@@ -1,5 +1,8 @@
 % Define the Q matrix (20x20)
 % Redundancy matrix (scaled)
+load Data_hESC_EC_day1_5000g.mat
+load Tqubo__R0_f50monocle3_pseudotime_HVG_remonocle_5000_5k_cells.mat
+load R0.mat
 K = 20; 
 genes = sce.g;
 alphasol = Tqubo.alphasol;
@@ -55,3 +58,36 @@ title('Energy Landscape for All Combinations of 20 Genes and Selecting 3');
 legend('show');
 grid on;
 hold off;
+
+%%
+n1=30; n2=38;
+n1=57; n2=20;
+% n1=10; n2=114;
+
+assert(~isempty(which('gui.myFigurex')),'needs scGEAToolbox')
+
+hx = gui.myFigure;
+[pX, pY] = meshgrid(1:n1, 1:n2);
+% Z = reshape(randn(nchoosek(20, 3), 1), 38, 30);
+pZ = reshape(smoothed_E_reversed, n2, n1);
+s = surf(pX,pY,pZ,'EdgeColor','none');  %,'FaceAlpha',0.5);
+% s(1).EdgeColor = 'none';
+% sc(2).ZLocation = 'zmax';
+xlabel('Combination Index 1');
+ylabel('Combination Index 2');
+zlabel('Energy Value');
+box on
+view(3)
+hx.show;
+
+
+%%
+hx=gui.myFigure;
+[pX, pY] = meshgrid(1:n1, 1:n2);
+pZ=Z;
+load earth
+s=surface(pX,pY,pZ,X,'FaceColor','texturemap', ...
+    'EdgeColor','none','CDataMapping','direct');
+colormap(map)
+view(3)
+hx.show;

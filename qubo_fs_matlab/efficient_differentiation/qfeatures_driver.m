@@ -1,6 +1,6 @@
 % Set path for Linux
 %my_path  = "/scratch/user/ssromerogon/scGEAToolbox";
-my_path = "../../src-v0.2";
+my_path = "../../qfeatures-src-v0.2_matlab";
 addpath(genpath(my_path));
 
 path="Data_hESC_EC_day1_5000g.mat";
