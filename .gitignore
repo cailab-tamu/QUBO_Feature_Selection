@@ -161,4 +161,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 qubo_fs_matlab/efficient_differentiation/R0.mat
-qubo_fs_matlab/efficient_differentiation/ener_landscape_x_combinations.asv
+
+# Windows default autosave extension
+*.asv
+
