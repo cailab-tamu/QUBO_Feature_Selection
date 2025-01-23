@@ -15,8 +15,11 @@ Q = (1 - alphasol) * R - alphasol * diag(J);
 
 % Generate the idxg based on Tqubo.selectedGenes and genes
 idxg = zeros(K, 1);
-for ig = 1:length(idxg)
-    idxg(ig) = find(genes == Tqubo.selectedGenes(ig)); % Map to corresponding index
+
+rng("default")
+qubogenes = Tqubo.selectedGenes(randperm(numel(Tqubo.selectedGenes)));
+for ig = 1:K
+    idxg(ig) = find(genes == qubogenes(ig)); % Map to corresponding index
 end
 
 % Extract Qsub matrix (before shuffling)
@@ -56,7 +59,8 @@ grid on;
 hold off;
 
 %% Shuffle Qsub matrix for 2D energy plot
-% Shuffle idxg (random permutation of idxg)
+%{
+%Shuffle idxg (random permutation of idxg)
 idxg_shuffled = idxg(randperm(length(idxg))); % Shuffle idxg randomly
 
 % Permute Q using shuffled idxg for both rows and columns
@@ -79,21 +83,45 @@ end
 % Reverse the energy values (for shuffled case)
 E_icomb_shuffled_reversed = flip(E_icomb_shuffled);
 
+%}
 % Reshape the reversed energy values for 2D grid (ensure reshaped array fits grid dimensions)
-n1 = 30; n2 = 38;  % Set grid dimensions
-pZ = reshape(E_icomb_shuffled_reversed, n2, n1);  % Reshaping to fit (n2, n1) grid
+
+setid = 1; 
+smoothed = false;
+useinterp = true;
+
+switch setid
+    case 1
+        n1 = 30; n2 = 38;  % Set grid dimensions
+    case 2
+        n1 = 20; n2 = 57;  % Set grid dimensions
+    case 3
+        n1 = 10; n2 = 114;  % Set grid dimensions
+end
+
+if smoothed
+    pZ = reshape(smoothed_E_reversed, n2, n1);  % Reshaping to fit (n2, n1) grid
+else
+    pZ = reshape(E_icomb_reversed, n2, n1);  % Reshaping to fit (n2, n1) grid
+end
 
 % Create a 3D surface plot for the shuffled energy values
 hx = gui.myFigure;
 [pX, pY] = meshgrid(1:n1, 1:n2);  % Define grid for X and Y axes
-s = surf(pX, pY, pZ, 'EdgeColor', 'none');  % Create the surface plot
 
-% Set plot labels and view options
+if useinterp
+    % Create a finer grid for interpolation
+    [Xq, Yq] = meshgrid(1:0.1:n1, 1:0.1:n2); % Finer grid
+    Zq = interp2(pX, pY, pZ, Xq, Yq, 'spline'); % Use 'spline' for smooth interpolation
+    s = surf(Xq, Yq, Zq, 'EdgeColor', 'none','FaceAlpha', 0.5);
+else
+    s = surf(pX, pY, pZ, 'EdgeColor', 'none');  % Create the surface plot
+end
 xlabel('Combination Index 1');
 ylabel('Combination Index 2');
 zlabel('Energy Value');
-title('Shuffled Energy Plot of Combinations');
-box on;
+title('Energy landscape for combinations of 3 out of 20 genes');
+%box on;
+colormap jet
 view(3);  % 3D view for better visualization
-
 hx.show;  % Display the figure
