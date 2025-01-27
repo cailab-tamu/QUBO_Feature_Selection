@@ -138,12 +138,17 @@ z = E_icomb_reversed;
 [xq, yq] = meshgrid(linspace(min(x), max(x), 50), linspace(min(y), max(y), 50)); 
 zq = griddata(x, y, z, xq, yq, 'natural');
 
+
+
 %{
     zq = fillmissing(zq, 'linear', 2); % Fill NaNs linearly along rows
     zq = fillmissing(zq, 'linear', 1); % Then fill along columns
     % zq(isnan(zq)) = min(zq(:)); % mean(zq(:), 'omitnan');
     [Xq, Yq] = meshgrid(1:0.1:size(xq, 1), 1:0.1:size(xq, 2)); % Finer grid
-    Zq = interp2(xq, yq, zq, Xq, Yq, 'spline'); % Use 'spline' for smooth interpolation
+    [Xq, Yq] = meshgrid(1:0.1:size(xq, 1), 1:0.1:size(xq, 2)); % Finer grid
+    Zq = gridfit(xq, yq, zq, 1:0.1:size(xq, 1), 1:0.1:size(xq, 2));
+    % Zq = interp2(xq, yq, zq, Xq, Yq, 'spline'); % Use 'spline' for smooth interpolation    
+    surf(Xq, Yq, Zq, 'EdgeColor', 'none');
 %}
 
 hx = gui.myFigure;
