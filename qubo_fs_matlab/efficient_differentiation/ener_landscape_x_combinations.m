@@ -125,3 +125,55 @@ title('Energy landscape for combinations of 3 out of 20 genes');
 colormap jet
 view(3);  % 3D view for better visualization
 hx.show;  % Display the figure
+
+%%
+% a=dec2bin([18 29 20;1 2 3]', 5)'-'0'
+a = dec2bin(combinations', 5)'-'0';
+a = a(:);
+b = reshape(a, [15 length(a)/15])';
+rng(500);
+[eb] = tsne(b);
+x = eb(:,1); y = eb(:,2);
+z = E_icomb_reversed;
+[xq, yq] = meshgrid(linspace(min(x), max(x), 50), linspace(min(y), max(y), 50)); 
+zq = griddata(x, y, z, xq, yq, 'natural');
+
+%{
+    zq = fillmissing(zq, 'linear', 2); % Fill NaNs linearly along rows
+    zq = fillmissing(zq, 'linear', 1); % Then fill along columns
+    % zq(isnan(zq)) = min(zq(:)); % mean(zq(:), 'omitnan');
+    [Xq, Yq] = meshgrid(1:0.1:size(xq, 1), 1:0.1:size(xq, 2)); % Finer grid
+    Zq = interp2(xq, yq, zq, Xq, Yq, 'spline'); % Use 'spline' for smooth interpolation
+%}
+
+hx = gui.myFigure;
+% surf(Xq, Yq, Zq); % Surface plot
+surf(xq, yq, zq, 'EdgeColor', 'none');
+shading interp;   % Smooth shading
+xlabel('Combination Index 1');
+ylabel('Combination Index 2');
+zlabel('Energy Value');
+title('Energy landscape for combinations of 3 out of 20 genes');
+colormap(flipud(hot));
+colorbar
+view(3);  % 3D view for better visualization
+hx.show;  % Display the figure
+
+
+%{
+%https://arxiv.org/abs/2411.14708
+% colormap(flipud(jet));
+% Rugged surface of a 5D Sphere function
+when inputs are represented as Gemini embeddings of
+dimension 6K+, post-processed by t-SNE into 2D space.
+
+hx = gui.myFigure;
+s = surf(z(:,1), z(:,2), E_icomb_reversed, 'EdgeColor', 'none');  % Create the surface plot
+xlabel('Combination Index 1');
+ylabel('Combination Index 2');
+zlabel('Energy Value');
+title('Energy landscape for combinations of 3 out of 20 genes');
+colormap jet
+view(3);  % 3D view for better visualization
+hx.show;  % Display the figure
+%}
