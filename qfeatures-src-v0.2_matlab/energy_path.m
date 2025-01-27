@@ -59,7 +59,7 @@ function energy_path(R0, qubo_genes, lasso_genes, genes, K, alphasol, save_path)
 
     % Save the plot to a file if save_path is provided
     if nargin > 6 && ~isempty(save_path)
-        saveas(gcf, save_path);  % Save the figure to the specified path
+        saveas(gcf, save_path, 'svg');  % Save the figure to the specified path
         fprintf('Plot saved to %s\n', save_path);
     end
 end

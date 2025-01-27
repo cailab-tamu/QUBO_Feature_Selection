@@ -16,11 +16,13 @@ Q = (1 - alphasol) * R - alphasol * diag(J);
 % Generate the idxg based on Tqubo.selectedGenes and genes
 idxg = zeros(K, 1);
 
-rng("default")
-qubogenes = Tqubo.selectedGenes(randperm(numel(Tqubo.selectedGenes)));
+%qubogenes = Tqubo.selectedGenes(randperm(numel(Tqubo.selectedGenes)));
+qubogenes = Tqubo.selectedGenes;
 for ig = 1:K
     idxg(ig) = find(genes == qubogenes(ig)); % Map to corresponding index
 end
+rng("default")
+idxg = idxg(randperm(numel(idxg)));
 
 % Extract Qsub matrix (before shuffling)
 Qsub_sorted = Q(idxg, idxg);  % Sorted Qsub matrix (based on original idxg)
@@ -48,9 +50,55 @@ E_icomb_reversed = flip(E_icomb);
 % Plot the reversed 1D energy values
 figure;
 hold on;
-plot(E_icomb_reversed, '-o', 'MarkerSize', 4, 'DisplayName', 'Raw Energy Values (Reversed)');
+plot(E_icomb_reversed, '-o', 'MarkerSize', 4, 'DisplayName', 'Raw Energy Values');
 smoothed_E_reversed = smooth(E_icomb_reversed, 0.1, 'loess');
-plot(smoothed_E_reversed, '-', 'LineWidth', 2, 'DisplayName', 'Smoothed Curve (Reversed)');
+plot(smoothed_E_reversed, '-', 'LineWidth', 2, 'DisplayName', 'Smoothed Curve');
+xlabel('Combination Index');
+ylabel('Energy Value');
+title('Energy Landscape for All Combinations of 20 Genes and Selecting 3');
+legend('show');
+grid on;
+hold off;
+%% Plot sorted selection in 1D energy values
+
+% Generate the idxg based on Tqubo.selectedGenes and genes
+idxg = zeros(K, 1);
+
+%qubogenes = Tqubo.selectedGenes(randperm(numel(Tqubo.selectedGenes)));
+qubogenes = Tqubo.selectedGenes;
+for ig = 1:K
+    idxg(ig) = find(genes == qubogenes(ig)); % Map to corresponding index
+end
+
+% Extract Qsub matrix (before shuffling)
+Qsub_sorted = Q(idxg, idxg);  % Sorted Qsub matrix (based on original idxg)
+
+% Get all possible permutations of x with 3 ones in a vector of length 20
+combinations = nchoosek(1:20, 3);
+
+% Initialize an array to store the energy values
+E_icomb2 = zeros(size(combinations, 1), 1);
+
+% Loop through all combinations to compute energy values
+for i = 1:size(combinations, 1)
+    % Create a vector x_icomb with 1s at the selected positions
+    x_icomb = zeros(20, 1);
+    x_icomb(combinations(i, :)) = 1;
+    
+    % Calculate the energy E_icomb = x_icomb' * (Qsub_sorted * x_icomb)
+    Evec = Qsub_sorted * x_icomb;
+    E_icomb2(i) = x_icomb' * Evec;
+end
+
+% Reverse the energy values (for sorted case)
+E_icomb_reversed2 = flip(E_icomb2);
+
+% Plot the reversed 1D energy values
+figure;
+hold on;
+plot(E_icomb_reversed2, '-o', 'MarkerSize', 4, 'DisplayName', 'Raw Energy Values');
+smoothed_E_reversed = smooth(E_icomb_reversed2, 0.1, 'loess');
+plot(smoothed_E_reversed, '-', 'LineWidth', 2, 'DisplayName', 'Smoothed Curve');
 xlabel('Combination Index');
 ylabel('Energy Value');
 title('Energy Landscape for All Combinations of 20 Genes and Selecting 3');
