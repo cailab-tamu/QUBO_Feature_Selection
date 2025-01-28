@@ -81,3 +81,5 @@ grid on;
 
 % Hold off to stop adding plots to the same figure
 hold off;
+
+saveas(gcf, 'cross_validation_k100', 'svg');  % Save the figure to the specified path
