@@ -9,11 +9,16 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode, alpha)
     % mode ==> mode: 1 compute LASSO FS
     %          mode: 2 compute Elastic Net FS
     %          mode: 3 compute ReliefF FS
+    %          mode: 4 compute fitrtree FS
+    %          mode: 5 compute sequentialfs FS
+    %          mode: 6 compute fsrmrmr FS
+    % alpha ==> Elastic net parameter
+    % htos ==> Highest Time of Selection (for sequentialfs)
     % OUTPUT: 
     % Tsol ==> MATLAB table containing features and computation time
 
     % mode can be optional
-    if nargin < 5; mode = 1; end
+    if nargin < 5; mode = "lasso"; end
     if nargin < 6; alpha = 0.5; end
 
     % Ensure K does not exceed the number of features
@@ -23,6 +28,7 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode, alpha)
 
     % Initialize empty variables to avoid undefined variable errors
     sol_genes = {};
+    abs_coef = []; % Initialize abs_coef
 
     % Convert from sparse to full, if necessary
     if issparse(X)
@@ -34,25 +40,21 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode, alpha)
 
     % Start feature selection
     tic;
-    switch mode 
-        case 1
+    options = statset('UseParallel',true);
+    switch mode
+        case 'lasso'
             disp('LASSO feature selection activated');
-            % LASSO solver with cross validation (CV) 10
-            [B, FitInfo] = lasso(X', y, 'CV', 10);
-            % Select features within 1 standard error (1SE)
+            [B, FitInfo] = lasso(X', y, 'CV', 10, 'Options', options);
             idxLambda1SE = FitInfo.Index1SE;
-            % Score value from LASSO
             coef = B(:, idxLambda1SE);
-            % Select top K features
             [abs_coef, sorted_idx] = sort(abs(coef), 'descend');
             abs_coef = abs_coef(1:K);
             selectedFeatures = sorted_idx(1:K);
             sol_genes = g(selectedFeatures);
 
-        case 2
+        case 'elastic_net'
             disp('Elastic Net feature selection activated');
-            % Elastic Net solver with cross validation (CV) 10
-            [B, FitInfo] = lasso(X', y, 'CV', 10, 'Alpha', alpha);
+            [B, FitInfo] = lasso(X', y, 'CV', 10, 'Alpha', alpha,'Options', options);
             idxLambda1SE = FitInfo.Index1SE;
             coef = B(:, idxLambda1SE);
             [abs_coef, sorted_idx] = sort(abs(coef), 'descend');
@@ -60,27 +62,60 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode, alpha)
             selectedFeatures = sorted_idx(1:K);
             sol_genes = g(selectedFeatures);
 
-        case 3 
+        case 'rrelieff'
             disp('ReliefF feature selection activated');
             nearest_n = 10;
-            [rankedFeatures, coef] = relieff(X', y', nearest_n);
-            abs_coef = coef(1:K);
-            selectedFeatures = rankedFeatures(1:K);
+            [selectedFeatures, coef] = relieff(X', y', nearest_n);
+            selectedFeatures = selectedFeatures(1:K);
+            abs_coef = abs(coef(selectedFeatures));
             sol_genes = g(selectedFeatures);
+
+        case 'fittree'
+            disp('fitrensemble (Tree) feature selection activated');
+            Mdl = fitrensemble(X', y, 'Method', 'Bag', 'NumLearningCycles', 100, 'Options', options);
+            featureImportance = oobPermutedPredictorImportance(Mdl,'Options',options);
+            abs_featureImportance = abs(featureImportance); % Take the absolute value
+            [abs_coef, sorted_idx] = sort(abs_featureImportance, 'descend');
+            abs_coef = abs_coef(1:K);
+            selectedFeatures = sorted_idx(1:K);
+            sol_genes = g(selectedFeatures);
+
+        case 'fsmrmr'
+            disp('fsrmrmr feature selection activated');
+            [selectedFeatures, coef] = fsrmrmr(X', y', 'NumFeatures', K);
+            selectedFeatures = selectedFeatures(1:K);
+            abs_coef = abs(coef(selectedFeatures));
+            sol_genes = g(selectedFeatures);
+
+        case 'sequentialfs'
+            disp('sequentialfs feature selection activated');
+            fun = @(Xtrain, ytrain, Xtest, ytest) loss(fitrtree(Xtrain, ytrain), Xtest, ytest);
+            options = statset('UseParallel',true);
+            [selectedFeatures, history] = sequentialfs(fun, X', y', 'CV', 10, 'nfeatures', K, ...
+                                              'Options', options, 'direction', ...
+                                              'forward');
+            sol_genes = g(selectedFeatures);
+            abs_coef = ones(1,length(selectedFeatures)); % sequentialfs doesnt return feature importance
+
     end
     time = toc;
     fprintf("FS time: %f \n", time);
 
-    % Check the non-zero features 
-    idx = abs_coef > 0;
-    sol_genes = sol_genes(idx);
-    selectedFeatures = selectedFeatures(idx);
-    abs_coef = abs_coef(idx);
+    % Check the non-zero features (for cases where it makes sense)
+    if ~isempty(abs_coef)
+        idx = abs_coef > 0;
+        sol_genes = sol_genes(idx);
+        selectedFeatures = selectedFeatures(idx);
+        abs_coef = abs_coef(idx);
+    else
+        idx = true(size(sol_genes)); % For sequentialfs or fsrmrmr, keep all
+    end
 
     nsel = sum(idx);
-    if nsel < K 
+    if nsel < K && mode ~= 5 && mode ~= 6 % dont warn on sequentialfs or fsrmrmr
         fprintf("Not able to select %d genes, providing %d \n", K, nsel);
     end
+
     % Ensure sol_genes is in the correct orientation
     if size(sol_genes, 1) > 1
         sol_genes = sol_genes';
@@ -94,7 +129,6 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode, alpha)
 
     % Create output table
     Tsol = table(sol_genes, selectedFeatures, abs_coef, time, ...
-         'VariableNames', {'selectedGenes', 'featureIndices', ...
-         'abs_bcoef', 'computationTime'});
+        'VariableNames', {'selectedGenes', 'featureIndices', ...
+        'abs_bcoef', 'computationTime'});
 end
-

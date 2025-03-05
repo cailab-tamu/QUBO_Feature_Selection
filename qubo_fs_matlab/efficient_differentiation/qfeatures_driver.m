@@ -15,7 +15,7 @@ X = full(sce.X);
 X = full(sc_transform(X, "type","PearsonResiduals"));
 
 % Features to extract
-K = 20; 
+K = 50; 
 
 % Predictor
 cell_type_target = "monocle3_pseudotime";
@@ -35,7 +35,15 @@ fprintf("Final matrix size %d , %d \n",size(X));
 readR = false;
 Tqubo = qfeatures_qubo_base( X, g, y, K, readR);
 
-Tml = mlfeatures_base(X, g, y, K, 1);
+
+modes = ["lasso", "elastic_net", "rrelieff",...
+         "fittree", "fsmrmr", "sequentialfs"];
+Tml =cell(length(modes),1);
+for imode = modes
+    fprintf("Current mode %s \n", imode)
+    Tml{imode} =  mlfeatures_base(X, g, y, K, imode);
+    break;
+end
 
 % Label stuff for saving tables
 cts = strcat(string(K),cell_type_target);
@@ -44,17 +52,21 @@ str_numcells="_5k_cells";
 fname0 = strcat("_HVG_remonocle_", int2str(ngenes));
 fname0 = strcat(cts, fname0 );
 fname0 = strcat(fname0, str_numcells); 
-fname1 = strcat('Tqubo_', fname0);
-save(strcat(fname1,'.mat'),'Tqubo','-v7.3')
+
+% Saving Tml
 fname1 = strcat('Tml_', fname0);
 save(strcat(fname1,'.mat'),'Tml','-v7.3')
+
+fname0 = strcat(fname0, str_numcells); 
+fname1 = strcat('Tqubo_', fname0);
+save(strcat(fname1,'.mat'),'Tqubo','-v7.3')
 
 % Writting features
 fname = "featues";
 ftext_name = strcat(fname, fname0,".txt" );
 writematrix(Tqubo.selectedGenes','qubo_features.txt');
 writematrix(Tml.selectedGenes',"lasso_features.txt");
-%writematrix(Tml.sol_genes_relief',"relief_features.txt");
+writematrix(Tml_relieff.selectedGenes',"relief_features.txt");
 
 % Intersection of lasso with qubo
 %inter_genes = intersect(Tqubo.selectedGenes, Tml.selectedGenes, 'stable');
