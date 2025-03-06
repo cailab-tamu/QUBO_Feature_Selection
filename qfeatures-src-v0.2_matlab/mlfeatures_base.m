@@ -130,5 +130,5 @@ function [Tsol] = mlfeatures_base(X, g, y, K, imode, alpha)
     % Create output table
     Tsol = table(sol_genes, selectedFeatures, abs_coef, time, ...
         'VariableNames', {'selectedGenes', 'featureIndices', ...
-        'abs_bcoef', 'computationTime'});
+        'abs_coef', 'computationTime'});
 end

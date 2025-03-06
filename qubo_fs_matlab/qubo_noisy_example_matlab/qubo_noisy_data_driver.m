@@ -32,6 +32,15 @@ for i = 1:length(modes)
     Tml{i} = T; % Store the result
 end
 
+% Label stuff for saving tables
+fname0 = '_noisy_data'; 
+% Saving Tml
+fname1 = strcat('Tml', fname0);
+save(strcat(fname1,'.mat'),'Tml','-v7.3')
+
+fname1 = strcat('Tqubo', fname0);
+save(strcat(fname1,'.mat'),'Tqubo','-v7.3')
+
 inter_feat_qubo = intersect(Tqubo.selectedGenes, source_f)
 inter_feat_lasso = intersect(Tml{1}.selectedGenes, source_f)
 inter_feat_elastic_net = intersect(Tml{2}.selectedGenes, source_f)
