@@ -24,11 +24,8 @@ Tml = cell(length(modes), 1);
 for i = 1:length(modes)
     imoden = modes(i); % Get the current mode
     fprintf("Current mode %s \n", imoden); % Corrected variable name
-
     T = mlfeatures_base(X, g, Y, K, imoden); % Call the feature selection function
-
     T.mode = imoden; % Add mode as a structure field
-
     Tml{i} = T; % Store the result
 end
 
@@ -50,4 +47,20 @@ inter_feat_fsmrmr = intersect(Tml{5}.selectedGenes, source_f)
 inter_feat_sequentialfs = intersect(Tml{6}.selectedGenes, source_f)
 
 
+modes = ["lasso", "elastic_net", "rrelieff", "fittree", "fsmrmr", "sequentialfs"];
+% Create an empty table with specified column names and data types
+Tres = table();
+for i = 1:length(modes)
+    method = modes(i); % Get the current mode
+    pct_acc = length(intersect(Tml{i}.selectedGenes, source_f))/length(source_f)*100;
+    comp_time = Tml{i}.computationTime;
+    Tmp = table(method, pct_acc, comp_time);
+    Tres = vertcat(Tres, Tmp);
+end
+pct_acc = length(intersect(Tqubo.selectedGenes, source_f))/length(source_f)*100;
+comp_time = Tqubo.time_mi + Tqubo.time_zerof;
+method = "qubo";
+Tmp = table(method, pct_acc, comp_time);
+Tres = vertcat(Tres, Tmp);
 
+save('methods_performance.mat','Tres','-v7.3')

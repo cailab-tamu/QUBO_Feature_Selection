@@ -62,7 +62,8 @@ fname1 = strcat('Tqubo', fname0);
 save(strcat(fname1,'.mat'),'Tqubo','-v7.3')
 
 writematrix(Tqubo.selectedGenes','qubo_features.txt');
-writematrix(Tml.selectedGenes',"lasso_features.txt");
+writematrix(Tml{1}.selectedGenes',"lasso_features.txt");
+writematrix(Tml{4}.selectedGenes',"fittree_features.txt");
 
 % Energy landscape
 load("R0.mat")
