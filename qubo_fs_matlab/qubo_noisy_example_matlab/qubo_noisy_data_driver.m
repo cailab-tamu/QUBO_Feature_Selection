@@ -1,4 +1,4 @@
-addpath('../src-v0.2/');
+my_path = "../../qfeatures-src-v0.2_matlab";
 rng default;
 p = 10000;
 n = 50;
@@ -18,9 +18,27 @@ X = X';
 Y = Y';
 Tqubo = qfeatures_qubo_base(X, g, Y, K, false);
 
-Tml  = mlfeatures_base(X, g, Y, K, 1);
-Tml2  = mlfeatures_base(X, g, Y, K, 2);
+modes = ["lasso", "elastic_net", "rrelieff", "fittree", "fsmrmr", "sequentialfs"];
+Tml = cell(length(modes), 1);
+
+for i = 1:length(modes)
+    imoden = modes(i); % Get the current mode
+    fprintf("Current mode %s \n", imoden); % Corrected variable name
+
+    T = mlfeatures_base(X, g, Y, K, imoden); % Call the feature selection function
+
+    T.mode = imoden; % Add mode as a structure field
+
+    Tml{i} = T; % Store the result
+end
 
 inter_feat_qubo = intersect(Tqubo.selectedGenes, source_f)
-inter_feat_lasso = intersect(Tml.selectedGenes, source_f)
-inter_feat_relief = intersect(Tml2.selectedGenes, source_f)
+inter_feat_lasso = intersect(Tml{1}.selectedGenes, source_f)
+inter_feat_elastic_net = intersect(Tml{2}.selectedGenes, source_f)
+inter_feat_relief = intersect(Tml{3}.selectedGenes, source_f)
+inter_feat_fittree = intersect(Tml{4}.selectedGenes, source_f)
+inter_feat_fsmrmr = intersect(Tml{5}.selectedGenes, source_f)
+inter_feat_sequentialfs = intersect(Tml{6}.selectedGenes, source_f)
+
+
+

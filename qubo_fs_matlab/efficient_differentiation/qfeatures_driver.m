@@ -36,13 +36,18 @@ readR = false;
 Tqubo = qfeatures_qubo_base( X, g, y, K, readR);
 
 
-modes = ["lasso", "elastic_net", "rrelieff",...
-         "fittree", "fsmrmr", "sequentialfs"];
-Tml =cell(length(modes),1);
-for imode = modes
-    fprintf("Current mode %s \n", imode)
-    Tml{imode} =  mlfeatures_base(X, g, y, K, imode);
-    break;
+modes = ["lasso", "elastic_net", "rrelieff", "fittree", "fsmrmr", "sequentialfs"];
+Tml = cell(length(modes), 1);
+
+for i = 1:length(modes)
+    imoden = modes(i); % Get the current mode
+    fprintf("Current mode %s \n", imoden); % Corrected variable name
+
+    T = mlfeatures_base(X, g, Y, K, imoden); % Call the feature selection function
+
+    T.mode = imoden; % Add mode as a structure field
+
+    Tml{i} = T; % Store the result
 end
 
 % Label stuff for saving tables

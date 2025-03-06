@@ -1,4 +1,4 @@
-function [Tsol] = mlfeatures_base(X, g, y, K, mode, alpha)
+function [Tsol] = mlfeatures_base(X, g, y, K, imode, alpha)
     % mlfeatures_base computes the feature selection (FS)
     % from count matrix X, genes g and y target.
     % INPUT:
@@ -6,19 +6,19 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode, alpha)
     % g =====> Genes/features from single cell experiment
     % y =====> Predictor/target variable
     % K =====> Number of features to retrieve
-    % mode ==> mode: 1 compute LASSO FS
-    %          mode: 2 compute Elastic Net FS
-    %          mode: 3 compute ReliefF FS
-    %          mode: 4 compute fitrtree FS
-    %          mode: 5 compute sequentialfs FS
-    %          mode: 6 compute fsrmrmr FS
+    % imode ==> imode: 1 compute LASSO FS
+    %          imode: 2 compute Elastic Net FS
+    %          imode: 3 compute ReliefF FS
+    %          imode: 4 compute fitrtree FS
+    %          imode: 5 compute sequentialfs FS
+    %          imode: 6 compute fsrmrmr FS
     % alpha ==> Elastic net parameter
     % htos ==> Highest Time of Selection (for sequentialfs)
     % OUTPUT: 
     % Tsol ==> MATLAB table containing features and computation time
 
-    % mode can be optional
-    if nargin < 5; mode = "lasso"; end
+    % imode can be optional
+    if nargin < 5; imode = "lasso"; end
     if nargin < 6; alpha = 0.5; end
 
     % Ensure K does not exceed the number of features
@@ -41,8 +41,8 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode, alpha)
     % Start feature selection
     tic;
     options = statset('UseParallel',true);
-    switch mode
-        case 'lasso'
+    switch imode
+        case "lasso"
             disp('LASSO feature selection activated');
             [B, FitInfo] = lasso(X', y, 'CV', 10, 'Options', options);
             idxLambda1SE = FitInfo.Index1SE;
@@ -52,7 +52,7 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode, alpha)
             selectedFeatures = sorted_idx(1:K);
             sol_genes = g(selectedFeatures);
 
-        case 'elastic_net'
+        case "elastic_net"
             disp('Elastic Net feature selection activated');
             [B, FitInfo] = lasso(X', y, 'CV', 10, 'Alpha', alpha,'Options', options);
             idxLambda1SE = FitInfo.Index1SE;
@@ -62,7 +62,7 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode, alpha)
             selectedFeatures = sorted_idx(1:K);
             sol_genes = g(selectedFeatures);
 
-        case 'rrelieff'
+        case "rrelieff"
             disp('ReliefF feature selection activated');
             nearest_n = 10;
             [selectedFeatures, coef] = relieff(X', y', nearest_n);
@@ -70,7 +70,7 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode, alpha)
             abs_coef = abs(coef(selectedFeatures));
             sol_genes = g(selectedFeatures);
 
-        case 'fittree'
+        case "fittree"
             disp('fitrensemble (Tree) feature selection activated');
             Mdl = fitrensemble(X', y, 'Method', 'Bag', 'NumLearningCycles', 100, 'Options', options);
             featureImportance = oobPermutedPredictorImportance(Mdl,'Options',options);
@@ -80,20 +80,20 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode, alpha)
             selectedFeatures = sorted_idx(1:K);
             sol_genes = g(selectedFeatures);
 
-        case 'fsmrmr'
+        case "fsmrmr"
             disp('fsrmrmr feature selection activated');
-            [selectedFeatures, coef] = fsrmrmr(X', y', 'NumFeatures', K);
-            selectedFeatures = selectedFeatures(1:K);
+            [selectedFeatures, coef] = fsrmrmr(X', y'); % Remove 'NumFeatures'
+            selectedFeatures = selectedFeatures(1:K); % Select top K features
             abs_coef = abs(coef(selectedFeatures));
             sol_genes = g(selectedFeatures);
 
-        case 'sequentialfs'
+        case "sequentialfs"
             disp('sequentialfs feature selection activated');
             fun = @(Xtrain, ytrain, Xtest, ytest) loss(fitrtree(Xtrain, ytrain), Xtest, ytest);
-            options = statset('UseParallel',true);
-            [selectedFeatures, history] = sequentialfs(fun, X', y', 'CV', 10, 'nfeatures', K, ...
+            [selectedFeatures, ~] = sequentialfs(fun, X', y', 'CV', 10, 'nfeatures', K, ...
                                               'Options', options, 'direction', ...
                                               'forward');
+            selectedFeatures = find(selectedFeatures==1);
             sol_genes = g(selectedFeatures);
             abs_coef = ones(1,length(selectedFeatures)); % sequentialfs doesnt return feature importance
 
@@ -112,7 +112,7 @@ function [Tsol] = mlfeatures_base(X, g, y, K, mode, alpha)
     end
 
     nsel = sum(idx);
-    if nsel < K && mode ~= 5 && mode ~= 6 % dont warn on sequentialfs or fsrmrmr
+    if nsel < K && imode ~="fsmrmr" && imode ~= "sequentialfs"  %dont warn on sequentialfs or fsrmrmr
         fprintf("Not able to select %d genes, providing %d \n", K, nsel);
     end
 
