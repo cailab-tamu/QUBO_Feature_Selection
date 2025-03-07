@@ -16,23 +16,27 @@ X = full(sce.X(1:ng,:));
 X = full(sc_transform(X, "type","PearsonResiduals"));
 
 % Features to extract
-K = 100; 
+K = 500; 
 
 % Predictor
 cell_type_target = "manual_pseudotime";
 
 % Preparing target predictor y from pseudo-time values per cell
 idx = find(contains(sce.list_cell_attributes(1:2:end), cell_type_target));
-if isempty(idx), returen; end
+if isempty(idx), return; end
 y = sce.list_cell_attributes{idx*2};
 %y = y';
 
 fprintf("Final matrix size %d , %d \n",size(X));
 
 % readR false will recompute R0 (MI)
-readR = false;
+readR = true;
 Tqubo = qfeatures_qubo_base( X, g, y, K, readR);
-
+% Writting QUBO features
+imode = "qubo";
+outfile = sprintf("%s_ng_%d_features_%d.txt", imode, ng, K);
+writematrix(Tqubo.selectedGenes',outfile);
+    
 modes = ["lasso", "elastic_net", "rrelieff", "fittree", "fsmrmr"];
 Tml = cell(length(modes), 1);
 for i = 1:length(modes)
@@ -61,9 +65,6 @@ fname0 = strcat(fname0, str_numcells);
 fname1 = strcat('Tqubo', fname0);
 save(strcat(fname1,'.mat'),'Tqubo','-v7.3')
 
-writematrix(Tqubo.selectedGenes','qubo_features.txt');
-writematrix(Tml{1}.selectedGenes',"lasso_features.txt");
-writematrix(Tml{4}.selectedGenes',"fittree_features.txt");
 
 % Energy landscape
 load("R0.mat")

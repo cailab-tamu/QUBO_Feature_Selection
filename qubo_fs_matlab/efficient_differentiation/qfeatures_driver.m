@@ -9,7 +9,7 @@ sce = data.sce;
 clear data;
 
 % Pre-processing 
-ng = 500;
+ng = sce.NumGenes;
 g = sce.g(1:ng);
 X = full(sce.X(1:ng,:));
 %X = sc_norm(X);
@@ -34,7 +34,9 @@ readR = false;
 Tqubo = qfeatures_qubo_base( X, g, y, K, readR);
 
 % Writting QUBO features
-writematrix(Tqubo.selectedGenes','qubo_features.txt');
+imode = "qubo";
+outfile = sprintf("%s_ng_%d_features_%d.txt", imode, ng, K);
+writematrix(Tqubo.selectedGenes',outfile);
     
 %modes = ["lasso", "elastic_net", "rrelieff", "fittree", "fsmrmr", "sequentialfs"];
 % sequentialfs is extremely expensive
@@ -64,10 +66,8 @@ fname0 = strcat(fname0, str_numcells);
 fname1 = strcat('Tml', fname0);
 save(strcat(fname1,'.mat'),'Tml','-v7.3')
 
-fname0 = strcat(fname0, str_numcells); 
 fname1 = strcat('Tqubo', fname0);
 save(strcat(fname1,'.mat'),'Tqubo','-v7.3')
-
 
 % Energy landscape
 load("R0.mat")
