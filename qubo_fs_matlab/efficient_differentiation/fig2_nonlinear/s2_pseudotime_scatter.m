@@ -26,7 +26,6 @@ assert(all(y))
 t = sce.list_cell_attributes{idx+1};
 
 toc;
-
 % Smoothing parameter
 sp = 0.75;
 
