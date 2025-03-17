@@ -32,7 +32,6 @@ fprintf("Final matrix size %d , %d \n",size(X));
 save('training_info.mat','training_info','-v7.3')
 writematrix(selectedGenes0','qubo_features_train.txt');
 
-
 load('training_info.mat')
 
 % Initialize a cell array to store modified tables
@@ -71,6 +70,7 @@ plot(Itrain, TestAccuracy, 's-', 'LineWidth', 1.5, 'Color', [0.2, 0.2, 0.8]); % 
 xlabel('I-train');
 ylabel('Accuracy (%)');
 title(sprintf('I-train vs Test Accuracy for %d Features', K));
+ylim([90 100])
 
 % Add a legend
 %legend('Test Accuracy Local', 'Test Accuracy', 'Location', 'best');

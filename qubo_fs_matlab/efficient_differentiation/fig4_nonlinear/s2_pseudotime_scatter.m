@@ -101,8 +101,11 @@ fprintf('\nCommon genes\n');
 fprintf('%s, ', sort(sce.g(idx_common)));
 fprintf('\n');
 
-%% Non-linear genes Possible figure 3
-my_genes = setdiff(g_qubo,g_rfr,'stable');
+%% Unique QUBO genes Possible figure 3
+infile = 'genes_only_qubo_vs_all_splinefit.txt';
+T = readtable(infile,'ReadVariableNames',false);
+my_genes = string(T{:,1});
+%my_genes = setdiff(g_qubo,g_rfr,'stable');
 % Create a 2x5 figure
 f=figure;
 
@@ -135,37 +138,6 @@ for idx = 1:length(my_genes)
 end
 f.Position(3:4)=[1364 420];
 
-%% Non-linear genes Possible figure 3
-%my_genes = setdiff(g_qubo,g_rfr,'stable');
-my_genes = setdiff(g_rfr,g_qubo,'stable');
-
-% Create a 2x5 figure
-f=figure;
-for idx = 1:length(my_genes)
-    % subplot(2, 5, i); % Create subplot
-    nexttile;
-    hold on;
-
-    % Plot all QUBO genes in gray
-    for k = 1:50
-        plot(t_rfr_sort(:,k), y_rfr_fit(:,k), ...
-            'LineWidth', 0.5, 'Color', 'k'); %[0.35, 0.35, 0.35]);
-        %plot(t_qubo_sort(:,k), y_qubo_fit(:,k), 'LineWidth', 2, 'Color', 'k');
-
-    end
-
-    % Plot the selected gene in red
-    gene_index = find(strcmp(g_rfr, my_genes(idx)));
-    plot(t_rfr_sort(:,gene_index), ...
-        y_rfr_fit(:,gene_index), 'LineWidth', 2, ...
-        'Color', 'r');
-
-    %xlim([-0.06 max(t)+0.04]);
-    %ylim([-2 4]);
-    
-    %xlabel('Pseudotime')
-    %ylabel('Standardized Expression')
-    box on
-    title(sprintf('%s', my_genes(idx)));
-end
-f.Position(3:4)=[1364 420];
+% Save as SVG
+filename = 'exclusive_qubo_genes_figure.svg';
+saveas(f, filename, 'svg');

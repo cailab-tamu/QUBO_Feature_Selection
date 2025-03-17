@@ -1,5 +1,8 @@
-function [training_info, selectedGenes0, avg_training_accu] = cross_validation_qubo(X, g, y, K)
-                    
+function [training_info, selectedGenes0, avg_training_accu] = cross_validation_qubo(X, g, y, K, seed)
+    
+    if nargin < 5; seed = 'default'; end
+    rng(seed);
+
     nFolds = 10; % Number of cross-validation folds
     cv = cvpartition(size(y, 2), 'KFold', nFolds);
     disp(cv)

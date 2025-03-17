@@ -71,8 +71,9 @@ save(strcat(fname1,'.mat'),'Tqubo','-v7.3')
 
 % Energy landscape
 load("R0.mat")
-energy_path(R0, Tqubo.selectedGenes, Tml.selectedGenes, g, K,...
-                 Tqubo.alphasol, 'energy_path.png');
+K = length( Tqubo.selectedGenes); 
+energy_path2(R0, Tqubo.selectedGenes, Tml{1}.selectedGenes, Tml{4}.selectedGenes, g, K,...
+                 Tqubo.alphasol, 'energy_path2_500.svg');
 
 %% Saving matrices for d-wave
 % load('R0.mat');

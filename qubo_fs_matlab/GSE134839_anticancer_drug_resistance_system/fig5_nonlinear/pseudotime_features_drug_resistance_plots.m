@@ -12,15 +12,25 @@ g3 = Tml{4}.selectedGenes;
 
 rfn_u_lasso = union(g2, g3);
 qubo_only = setdiff(g1, rfn_u_lasso,'stable'); % This keeps g1 order
+%qubo_only = g1;
+
+qubo_shared = intersect(g1, g2, 'stable' );
 writematrix(qubo_only','qubo_only_features.txt')
+writematrix(qubo_shared','qubo_shared_features.txt')
 
 idx_qubo = zeros(length(qubo_only), 1);
 for i = 1:length(qubo_only)
     idx_qubo(i) = find(sce.g == qubo_only(i));
 end
- 
 g_qubo = sce.g(idx_qubo);
 X_qubo = X(idx_qubo,:);
+
+idx_qubo_shared = zeros(length(qubo_shared), 1);
+for i = 1:length(qubo_shared)
+    idx_qubo_shared(i) = find(sce.g == qubo_shared(i));
+end
+g_qubo_shared = sce.g(idx_qubo_shared);
+X_qubo_shared = X(idx_qubo_shared,:);
 
 % Predictor
 cell_type_target = 'manual_pseudotime';
@@ -47,20 +57,38 @@ for ig = 1:ngene
 end
 toc;
 
+tic;
+% QUBO shared genes fitting 
+ngene = size(X_qubo_shared, 1);
+ncell = size(X_qubo_shared, 2);
+y_qubo_shared_fit = zeros(ncell, ngene);
+t_qubo_shared_sort = zeros(ncell, ngene);
+for ig = 1:ngene
+    [y_qubo_shared_fit(1:ncell, ig), idx] = ...
+                        loess_smoothing(t, X_qubo_shared(ig,:)', sp);
+    t_qubo_shared_sort(1:ncell, ig) = t(idx);
+end
+toc;
+
 %%
 
 f=figure;
-hold on
-for k=1:length(qubo_only)
-    plot(t_qubo_sort(:,k), y_qubo_fit(:,k),'LineWidth',2,'Color', 'k');
+hold on;
+for k=1:length(g_qubo_shared)
+    plot(t_qubo_shared_sort(:,k), y_qubo_shared_fit(:,k),'LineWidth',1,'Color', 'k');
 end
+
+hold on;
+for k=1:length(qubo_only)
+    plot(t_qubo_sort(:,k), y_qubo_fit(:,k),'LineWidth',2,'Color', 'g');
+end
+
 xlim([0 max(t)]);
-ylim([-2 4]);
+ylim([-2.5 4]);
 xlabel('Pseudotime')
 ylabel('Standardized Expression')
 box on
 title('QUBO')
-
 
 %% Non-linear genes Possible figure 3
 % Non-linear genes

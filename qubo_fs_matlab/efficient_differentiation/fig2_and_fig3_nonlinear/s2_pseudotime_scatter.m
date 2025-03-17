@@ -24,12 +24,11 @@ X_qubo = X(idx_qubo,:);
 [y,idx] = ismember('splinefit_pseudotime', sce.list_cell_attributes(1:2:end));
 assert(all(y))
 t = sce.list_cell_attributes{idx+1};
-
 toc;
-% Smoothing parameter
-sp = 0.75;
 
 tic;
+% Smoothing parameter
+sp = 0.75;
 % LASSO fitting
 ngene = size(X_lasso, 1);
 ncell = size(X_lasso, 2);
@@ -90,14 +89,6 @@ for k=1:50
     end
 end
 
-% % Non-linear genes
-% my_genes = ["IGFBP5" "KLK10" "MAP1B" "RGS10" "SFRP1" "TP53I11" "TRH" "TUBA1C" ...
-%             "VIM" "YWHAB"]; 
-% for k=1:50
-%     if ismember(g_qubo(k), my_genes)
-%         plot(t_qubo_sort(:,k), y_qubo_fit(:,k),'LineWidth',0.1,'Color', [1, 0, 0]);
-%     end
-% end
 f.Position(3) = 545;
 f.Position(4) = 266;
 
@@ -109,36 +100,28 @@ fprintf('\nCommon genes\n');
 fprintf('%s, ', sort(sce.g(idx_common)));
 fprintf('\n');
 
-
-
 %% Non-linear genes Possible figure 3
 % Non-linear genes
-% my_genes = ["IGFBP5" "KLK10" "MAP1B" "RGS10" "SFRP1" "TP53I11" "TRH" "TUBA1C" "VIM" "YWHAB"]; 
-% my_genes = ["IGFBP5" "MAP1B" "KLK10" "TP53I11" "TRH" "RGS10" "SFRP1" "TUBA1C" "VIM" "YWHAB"];
 my_genes = ["MAP1B" "KLK10" "TRH" "IGFBP5"  "TP53I11" "RGS10" "SFRP1" "TUBA1C" "VIM" "YWHAB"];
-
 % Create a 2x5 figure
-f=figure;
+f = figure;
+tiledlayout(2, 5); % Use tiledlayout for better subplot management
 
 for idx = 1:length(my_genes)
     % subplot(2, 5, i); % Create subplot
     nexttile;
     hold on;
-
     % Plot all QUBO genes in gray
     for k = 1:50
         plot(t_qubo_sort(:,k), y_qubo_fit(:,k), ...
             'LineWidth', 0.5, 'Color', 'k'); %[0.35, 0.35, 0.35]);
         %plot(t_qubo_sort(:,k), y_qubo_fit(:,k), 'LineWidth', 2, 'Color', 'k');
-
     end
-
     % Plot the selected gene in red
     gene_index = find(strcmp(g_qubo, my_genes(idx)));
     plot(t_qubo_sort(:,gene_index), ...
         y_qubo_fit(:,gene_index), 'LineWidth', 2, ...
         'Color', 'r');
-
     %xlim([-0.06 max(t)+0.04]);
     %ylim([-2 4]);
     
@@ -147,72 +130,11 @@ for idx = 1:length(my_genes)
     box on
     title(sprintf('%s', my_genes(idx)));
 end
-f.Position(3:4)=[1364 420];
+f.Position(3:4) = [1364 420];
 
-%% Plotting with Legend per method
-
-%{
-f = figure;
-f.Position(3)=f.Position(3)*1.4;
-hold on
-
-my_color = [0, 0.8, 0];
-
-h_lasso = plot(t_lasso_sort(:,1), y_lasso_fit(:,1),'LineWidth',3,'Color','k');
-h_qubo = plot(t_qubo_sort(:,1), y_qubo_fit(:,1),'LineWidth',1,'Color', my_color);
-
-% Plot remaining lines
-for k = 2:size(y_lasso_fit,2)
-    plot(t_lasso_sort(:,k), y_lasso_fit(:,k),'LineWidth',3,'Color','k');
-end 
-for k = 2:size(y_qubo_fit,2)
-    plot(t_qubo_sort(:,k), y_qubo_fit(:,k),'LineWidth',1,'Color', my_color);
-end 
-
-% Create legend
-legend([h_lasso, h_qubo], {'LASSO', 'QUBO'},'Location','northwest');
-
-xlim([0 max(t)]);
-% ylim([-6 6]);
-xlabel('Pseudotime')
-ylabel('Standardized Expression')
-box on
-title("Selected features - pseudotime prediction");
-%}
-
-%% Plotting with gene legends QUBO only
-
-% f = figure;
-% f.Position(3)=f.Position(3)*1.4;
-% hold on;
-% 
-% colors = colormap(jet);
-% [g_common, idx_common_qubo] = intersect(g_qubo, g_lasso);
-% [ g_qubo_unique, idx_only_qubo]= setdiff(g_qubo, g_common);
-% 
-% my_idx = [11, 12, 14, 19, 21, 26, 28, 29, 30];
-% legend_text = {};
-% h_lines = []; % To store plot handles
-% 
-% % Plot all lines and create legend entries
-% ibeg = 11; 
-% iend = 15;
-% %for i = 1:length(idx_only_qubo)
-% for i = ibeg:iend
-%     k = idx_only_qubo(i);
-%     h_lines(i) = plot(t_qubo_sort(:,k), y_qubo_fit(:,k), 'LineWidth', 1, 'Color', colors(mod(i*20-1, size(colors, 1)) + 1, :));
-%     legend_text{i} = g_qubo_unique(i);
-% end
-% 
-% % Create legend
-% legend(h_lines, legend_text, 'Location', 'bestoutside');
-% 
-% xlim([0 max(t)]);
-% xlabel('Pseudotime')
-% ylabel('Standardized Expression')
-% box on
-% title("Selected features - pseudotime prediction");
-
+% Save as SVG
+filename = 'nonlinear_genes_figure.svg';
+saveas(f, filename, 'svg');
 %% Plotting with gene legend QUBO only in ranges
 % 
 % f = figure;

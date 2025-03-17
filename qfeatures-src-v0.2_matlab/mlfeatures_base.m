@@ -1,4 +1,4 @@
-function [Tsol] = mlfeatures_base(X, g, y, K, imode, alpha)
+function [Tsol] = mlfeatures_base(X, g, y, K, imode, alpha, seed)
     % mlfeatures_base computes the feature selection (FS)
     % from count matrix X, genes g and y target.
     % INPUT:
@@ -17,9 +17,10 @@ function [Tsol] = mlfeatures_base(X, g, y, K, imode, alpha)
     % OUTPUT: 
     % Tsol ==> MATLAB table containing features and computation time
 
-    % imode can be optional
     if nargin < 5; imode = "lasso"; end
     if nargin < 6; alpha = 0.5; end
+    if nargin < 7; seed = 'default'; end
+    rng(seed);
 
     % Ensure K does not exceed the number of features
     if K > size(X, 1)
