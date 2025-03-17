@@ -19,10 +19,10 @@ X = full(sc_transform(X, "type","PearsonResiduals"));
 K = 50; 
 
 % Predictor
-cell_type_target = "monocle3_pseudotime";
+cell_target = "monocle3_pseudotime";
 
 % Preparing target predictor y from pseudo-time values per cell
-idx = find(contains(sce.list_cell_attributes(1:2:end), cell_type_target));
+idx = find(contains(sce.list_cell_attributes(1:2:end), cell_target));
 if isempty(idx), returen; end
 y = sce.list_cell_attributes{idx*2};
 y = y';
@@ -54,7 +54,7 @@ for i = 1:length(modes)
 end
 
 % Label stuff for saving tables
-cts = strcat(string(K),"_",cell_type_target);
+cts = strcat(string(K),"_",cell_target);
 cts = strcat("_f",cts);
 str_numcells=strcat("_cells_",string(sce.NumCells));
 fname0 = strcat("_HVG_", int2str(ng));

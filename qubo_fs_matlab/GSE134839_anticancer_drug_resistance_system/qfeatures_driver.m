@@ -16,7 +16,7 @@ X = full(sce.X(1:ng,:));
 X = full(sc_transform(X, "type","PearsonResiduals"));
 
 % Features to extract
-K = 500; 
+K = 100; 
 
 % Predictor
 cell_type_target = "manual_pseudotime";
