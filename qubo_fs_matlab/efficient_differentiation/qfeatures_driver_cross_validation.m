@@ -1,4 +1,4 @@
-my_path = "../../src-v0.2";
+my_path = "../../qfeatures-src-v0.2_matlab";
 addpath(genpath(my_path));
 
 path="Data_hESC_EC_day1_5000g.mat";
@@ -57,7 +57,7 @@ TestAccuracyLocal = combined_table{:,'Test_accuracy_local(%)'};
 TestAccuracy = combined_table{:,'Test_accuracy(%)'};
 
 % Create a single figure for both plots
-figure;
+f = figure;
 
 % Plot 1: Test_accuracy_local on the same figure
 plot(Itrain, TestAccuracyLocal, 'o-', 'LineWidth', 1.5, 'Color', [0.2, 0.6, 0.2]); % Green color
@@ -67,14 +67,15 @@ hold on; % Keep the same plot
 plot(Itrain, TestAccuracy, 's-', 'LineWidth', 1.5, 'Color', [0.2, 0.2, 0.8]); % Blue color
 
 % Labels and title
-xlabel('I-train');
-ylabel('Accuracy (%)');
-title(sprintf('I-train vs Test Accuracy for %d Features', K));
+xlabel('I-train','FontSize',14);
+ylabel('Accuracy (%)','FontSize',14);
+title(sprintf('I-train vs Test Accuracy for %d Features', K),'FontSize',16);
 ylim([90 100])
 
 % Add a legend
-%legend('Test Accuracy Local', 'Test Accuracy', 'Location', 'best');
-legend('Test Accuracy Local', 'Test Accuracy', 'Location', 'southeast');
+lgd = legend('Test Accuracy Local', 'Test Accuracy', 'Location', 'best');
+%lgd = legend('Test Accuracy Local', 'Test Accuracy', 'Location', 'southeast');
+fontsize(lgd, 11,'points')
 
 % Add grid for better readability
 grid on;
@@ -82,4 +83,8 @@ grid on;
 % Hold off to stop adding plots to the same figure
 hold off;
 
-saveas(gcf, 'cross_validation_k100', 'svg');  % Save the figure to the specified path
+
+% Save as high-quality PNG using print
+filename = 'cross_validation_k100.png';
+resolution = 300; 
+print(f, filename, '-dpng', sprintf('-r%d', resolution));

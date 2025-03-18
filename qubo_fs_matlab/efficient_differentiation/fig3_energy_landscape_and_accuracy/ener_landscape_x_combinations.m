@@ -1,6 +1,6 @@
 % Load necessary data
 load ../Data_hESC_EC_day1_5000g.mat
-load ../Tqubo__R0_f50monocle3_pseudotime_HVG_remonocle_5000_5k_cells.mat
+load ../selected_50f_results/Tqubo_f50_monocle3_pseudotime_HVG_5000_cells_4697.mat
 load ../R0.mat
 
 % Set parameters
@@ -48,17 +48,23 @@ end
 E_icomb_reversed = flip(E_icomb);
 
 % Plot the reversed 1D energy values
-figure;
+f = figure;
 hold on;
 plot(E_icomb_reversed, '-o', 'MarkerSize', 4, 'DisplayName', 'Raw Energy Values');
 smoothed_E_reversed = smooth(E_icomb_reversed, 0.1, 'loess');
 plot(smoothed_E_reversed, '-', 'LineWidth', 2, 'DisplayName', 'Smoothed Curve');
-xlabel('Combination Index');
-ylabel('Energy Value');
-title('Energy Landscape for All Combinations of 20 Genes and Selecting 3');
-legend('show');
+xlabel('Combination index','FontSize',14);
+ylabel('Energy value','FontSize',14);
+title({'Energy landscape for all combinations of 20 genes', 'selecting 3'}, 'FontSize', 15);
+lgd = legend('show', 'Location','best');
+fontsize(lgd, 11,'points')
 grid on;
 hold off;
+
+% Save as high-quality PNG using print
+filename = 'raw_energy_combinations.png';
+resolution = 300; 
+print(f, filename, '-dpng', sprintf('-r%d', resolution));
 %% Plot sorted selection in 1D energy values
 
 % Generate the idxg based on Tqubo.selectedGenes and genes
@@ -94,17 +100,23 @@ end
 E_icomb_reversed2 = flip(E_icomb2);
 
 % Plot the reversed 1D energy values
-figure;
+f = figure;
 hold on;
 plot(E_icomb_reversed2, '-o', 'MarkerSize', 4, 'DisplayName', 'Raw Energy Values');
 smoothed_E_reversed = smooth(E_icomb_reversed2, 0.1, 'loess');
 plot(smoothed_E_reversed, '-', 'LineWidth', 2, 'DisplayName', 'Smoothed Curve');
-xlabel('Combination Index');
-ylabel('Energy Value');
-title('Energy Landscape for All Combinations of 20 Genes and Selecting 3');
-legend('show');
+xlabel('Combination Index','FontSize', 14);
+ylabel('Energy Value','FontSize', 14);
+title({'Energy Minimization Landscape', ' All Combinations of 20 Genes Selecting 3'}, 'FontSize', 15);
+lgd = legend('show', 'Location','best');
+fontsize(lgd, 11,'points')
 grid on;
 hold off;
+
+% Save as high-quality PNG using print
+filename = 'energy_combinations_min.png';
+resolution = 300; 
+print(f, filename, '-dpng', sprintf('-r%d', resolution));
 
 %% Shuffle Qsub matrix for 2D energy plot
 %{
@@ -165,15 +177,19 @@ if useinterp
 else
     s = surf(pX, pY, pZ, 'EdgeColor', 'none');  % Create the surface plot
 end
-xlabel('Combination Index 1');
-ylabel('Combination Index 2');
-zlabel('Energy Value');
-title('Energy landscape for combinations of 3 out of 20 genes');
+xlabel('Combination Index 1', 'FontSize', 14);
+ylabel('Combination Index 2', 'FontSize', 14);
+zlabel('Energy Value', 'FontSize', 14);
+title({'Energy Landscape for All Combinations of 20 Genes', 'Selecting 3'}, 'FontSize', 15);
 %box on;
 colormap jet
 view(3);  % 3D view for better visualization
 hx.show;  % Display the figure
 
+% Save as high-quality PNG using print
+filename = 'energy_combinations_landscape.png';
+resolution = 300; 
+print(f, filename, '-dpng', sprintf('-r%d', resolution));
 %%
 % a=dec2bin([18 29 20;1 2 3]', 5)'-'0'
 a = dec2bin(combinations', 5)'-'0';
