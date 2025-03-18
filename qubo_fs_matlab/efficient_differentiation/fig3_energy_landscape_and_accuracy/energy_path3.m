@@ -1,4 +1,4 @@
-function energy_path2(R0, qubo_genes, lasso_genes, rfr_genes, genes, K, alphasol, save_path)
+function energy_path3(R0, qubo_genes, lasso_genes, rfr_genes, genes, K, alphasol, save_path)
     % Calculate the energy landscape for QUBO, LASSO, and RFR solutions
     % Inputs:
     % R0: Initial redundancy matrix with importance vector as the last row
@@ -39,19 +39,13 @@ function energy_path2(R0, qubo_genes, lasso_genes, rfr_genes, genes, K, alphasol
     range1 = 1:nsolq;
     f = figure;
     % Plot lines with colors
-    plot(range1, sum_ener_qubo, '-g', 'DisplayName', 'QUBO'); % Green line
+    plot(range1, sum_ener_qubo, '-g', 'LineWidth', 2, 'DisplayName', 'QUBO'); % Green line
     hold on;
     range2 = 1:nsoll;
-    plot(range2, sum_ener_lasso, '-k', 'DisplayName', 'LASSO'); % Black line
+    plot(range2, sum_ener_lasso, '-k', 'LineWidth', 2, 'DisplayName', 'LASSO'); % Black line
     range3 = 1:nsolr;
-    plot(range3, sum_ener_rfr, '-b', 'DisplayName', 'RFR'); % Blue line
-    % Add circles to each data point
-    plot(range1, sum_ener_qubo, '+g', 'MarkerSize', 3,'MarkerFaceColor', 'g', ...
-         'DisplayName', 'QUBO Points'); % Green circles
-    plot(range2, sum_ener_lasso, '+k','MarkerSize', 3, 'MarkerFaceColor', 'k', ...
-        'DisplayName', 'LASSO Points'); % Black circles
-    plot(range3, sum_ener_rfr, '+b','MarkerSize',3,'MarkerFaceColor','b',...
-        'DisplayName', 'RFR Points'); %Blue circles
+    plot(range3, sum_ener_rfr, '-b', 'LineWidth', 2, 'DisplayName', 'RFR'); % Blue line
+   
     % Labels and legend
     xlabel('Number of features','FontSize', 14);
     ylabel('Cumulative energy','FontSize', 14);

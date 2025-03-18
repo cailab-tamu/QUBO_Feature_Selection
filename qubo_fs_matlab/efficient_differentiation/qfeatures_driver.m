@@ -69,12 +69,6 @@ save(strcat(fname1,'.mat'),'Tml','-v7.3')
 fname1 = strcat('Tqubo', fname0);
 save(strcat(fname1,'.mat'),'Tqubo','-v7.3')
 
-% Energy landscape
-load("R0.mat")
-K = length( Tqubo.selectedGenes); 
-energy_path2(R0, Tqubo.selectedGenes, Tml{1}.selectedGenes, Tml{4}.selectedGenes, g, K,...
-                 Tqubo.alphasol, 'energy_path2_500.svg');
-
 %% Saving matrices for d-wave
 % load('R0.mat');
 % 

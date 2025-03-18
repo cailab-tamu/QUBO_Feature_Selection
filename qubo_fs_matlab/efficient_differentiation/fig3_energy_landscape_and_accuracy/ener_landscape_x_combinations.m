@@ -55,7 +55,7 @@ smoothed_E_reversed = smooth(E_icomb_reversed, 0.1, 'loess');
 plot(smoothed_E_reversed, '-', 'LineWidth', 2, 'DisplayName', 'Smoothed Curve');
 xlabel('Combination index','FontSize',14);
 ylabel('Energy value','FontSize',14);
-title({'Energy landscape for all combinations of 20 genes', 'selecting 3'}, 'FontSize', 15);
+title({'Energy Landscape 1D', ' All combinations of 20 genes selecting 3'}, 'FontSize', 15);
 lgd = legend('show', 'Location','best');
 fontsize(lgd, 11,'points')
 grid on;
@@ -105,9 +105,9 @@ hold on;
 plot(E_icomb_reversed2, '-o', 'MarkerSize', 4, 'DisplayName', 'Raw Energy Values');
 smoothed_E_reversed = smooth(E_icomb_reversed2, 0.1, 'loess');
 plot(smoothed_E_reversed, '-', 'LineWidth', 2, 'DisplayName', 'Smoothed Curve');
-xlabel('Combination Index','FontSize', 14);
-ylabel('Energy Value','FontSize', 14);
-title({'Energy Minimization Landscape', ' All Combinations of 20 Genes Selecting 3'}, 'FontSize', 15);
+xlabel('Combination index','FontSize', 14);
+ylabel('Energy value','FontSize', 14);
+title({'Energy minimization process', ' All combinations of 20 genes selecting 3'}, 'FontSize', 15);
 lgd = legend('show', 'Location','best');
 fontsize(lgd, 11,'points')
 grid on;
@@ -145,7 +145,6 @@ E_icomb_shuffled_reversed = flip(E_icomb_shuffled);
 
 %}
 % Reshape the reversed energy values for 2D grid (ensure reshaped array fits grid dimensions)
-
 setid = 1; 
 smoothed = false;
 useinterp = true;
@@ -177,20 +176,39 @@ if useinterp
 else
     s = surf(pX, pY, pZ, 'EdgeColor', 'none');  % Create the surface plot
 end
-xlabel('Combination Index 1', 'FontSize', 14);
-ylabel('Combination Index 2', 'FontSize', 14);
-zlabel('Energy Value', 'FontSize', 14);
-title({'Energy Landscape for All Combinations of 20 Genes', 'Selecting 3'}, 'FontSize', 15);
+
 %box on;
 colormap jet
 view(3);  % 3D view for better visualization
 hx.show;  % Display the figure
 
+ax = hx.FigHandle.Children; % Access the Axes object
+
+xlabel('Combination index 1', 'FontSize', 14); % Use 'Parent' to specify axes
+ylabel('Combination index 2', 'FontSize', 14); % Use 'Parent' to specify axes
+zlabel('Energy value', 'FontSize', 14);
+title({'Energy landscape 3D', ' All combinations of 20 genes selecting 3'}, 'FontSize', 15);
+
+% Rotate the labels
+xlabel_handle = ax.XLabel; % Access the XLabel object directly
+ylabel_handle = ax.YLabel; % Access the YLabel object directly
+set(xlabel_handle, 'Rotation', 16);
+set(ylabel_handle, 'Rotation', -24);
+
 % Save as high-quality PNG using print
 filename = 'energy_combinations_landscape.png';
-resolution = 300; 
-print(f, filename, '-dpng', sprintf('-r%d', resolution));
-%%
+exportgraphics(ax, filename, 'Resolution', 300);
+%% Energy path plot
+% Energy landscape
+load("../R0.mat")
+load("../selected_500f_results/Tqubo_f500_monocle3_pseudotime_HVG_5000_cells_4697.mat")
+load("../selected_500f_results/Tml_f500_monocle3_pseudotime_HVG_5000_cells_4697.mat")
+
+K = length( Tqubo.selectedGenes); 
+energy_path3(R0, Tqubo.selectedGenes, Tml{1}.selectedGenes, Tml{4}.selectedGenes, g, K,...
+                 Tqubo.alphasol, 'energy_path2_500.png');
+
+%% Not used...
 % a=dec2bin([18 29 20;1 2 3]', 5)'-'0'
 a = dec2bin(combinations', 5)'-'0';
 a = a(:);

@@ -69,11 +69,11 @@ plot(Itrain, TestAccuracy, 's-', 'LineWidth', 1.5, 'Color', [0.2, 0.2, 0.8]); % 
 % Labels and title
 xlabel('I-train','FontSize',14);
 ylabel('Accuracy (%)','FontSize',14);
-title(sprintf('I-train vs Test Accuracy for %d Features', K),'FontSize',16);
+title(sprintf('I-train vs test accuracy for %d features', K),'FontSize',16);
 ylim([90 100])
 
 % Add a legend
-lgd = legend('Test Accuracy Local', 'Test Accuracy', 'Location', 'best');
+lgd = legend('Test accuracy local', 'Test accuracy', 'Location', 'best');
 %lgd = legend('Test Accuracy Local', 'Test Accuracy', 'Location', 'southeast');
 fontsize(lgd, 11,'points')
 
