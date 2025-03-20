@@ -1,111 +1,112 @@
-load('../Data_hESC_EC_day1_5000g.mat')
-g = sce.g;
-X = sc_transform(sce.X);
-%K = 50;
+    load('../Data_hESC_EC_day1_5000g.mat');
+    g = sce.g;
+    X = sc_transform(sce.X);
+    %K = 50;
+    
+    load('../selected_50f_results/Tqubo_f50_monocle3_pseudotime_HVG_5000_cells_4697.mat')
+    g_qubo_sel = Tqubo.selectedGenes;
+    
+    load('../selected_50f_results/Tml_f50_monocle3_pseudotime_HVG_5000_cells_4697.mat')
+    % LASSO features
+    g_lasso_sel = Tml{1}.selectedGenes;
+    % Random forest regression features
+    g_rfr_sel = Tml{4}.selectedGenes;
+    
+    rfr_u_lasso = union(g_lasso_sel, g_rfr_sel);
+    qubo_only = setdiff(g_qubo_sel, rfr_u_lasso,'stable'); % This keeps g_qubo_sel order
+    
+    % QUBO only features
+    idx_qubo_only = zeros(length(qubo_only), 1);
+    for i = 1:length(qubo_only)
+        idx_qubo_only(i) = find(sce.g == qubo_only(i));
+    end
+    
+    % QUBO features
+    idx_qubo = zeros(length(g_qubo_sel), 1);
+    for i = 1:length(g_qubo_sel)
+        idx_qubo(i) = find(sce.g == g_qubo_sel(i));
+    end
+    g_qubo = sce.g(idx_qubo);
+    X_qubo = X(idx_qubo,:);
+    
+    % LASSO features
+    idx_lasso = zeros(length(g_lasso_sel), 1);
+    for i = 1:length(g_lasso_sel)
+        idx_lasso(i) = find(sce.g == g_lasso_sel(i));
+    end
+    g_lasso = sce.g(idx_lasso);
+    X_lasso = X(idx_lasso,:);
+    
+    % RFR features
+    idx_rfr = zeros(length(g_rfr_sel), 1);
+    for i = 1:length(g_rfr_sel)
+        idx_rfr(i) = find(sce.g == g_rfr_sel(i));
+    end
+    g_rfr = sce.g(idx_rfr);
+    X_rfr = X(idx_rfr,:);
+    
+    % Predictor
+    cell_type_target = 'monocle3_pseudotime';
+    
+    % Preparing target predictor y from pseudo-time values per cell
+    idx = find(contains(sce.list_cell_attributes(1:2:end), cell_type_target));
+    if isempty(idx), return; end
+    t = sce.list_cell_attributes{idx*2};
+    
+    % Smoothing parameter
+    sp = 0.75;
+    
+    tic;
+    % QUBO fitting
+    ngene = size(X_qubo, 1);
+    ncell = size(X_qubo, 2);
+    y_qubo_fit = zeros(ncell, ngene);
+    t_qubo_sort = zeros(ncell, ngene);
+    for ig = 1:ngene
+        [y_qubo_fit(1:ncell, ig), idx] = ...
+                            loess_smoothing(t, X_qubo(ig,:)', sp);
+        t_qubo_sort(1:ncell, ig) = t(idx);
+    end
+    toc;
+    
+    tic;
+    % LASSO fitting
+    ngene = size(X_lasso, 1);
+    ncell = size(X_lasso, 2);
+    y_lasso_fit = zeros(ncell, ngene);
+    t_lasso_sort = zeros(ncell, ngene);
+    for ig = 1:ngene
+        [y_lasso_fit(1:ncell, ig), idx] = ...
+                            loess_smoothing(t, X_lasso(ig,:)', sp);
+        t_lasso_sort(1:ncell, ig) = t(idx);
+    end
+    toc;
+    
+    tic;
+    % RFR fitting
+    ngene = size(X_rfr, 1);
+    ncell = size(X_rfr, 2);
+    y_rfr_fit = zeros(ncell, ngene);
+    t_rfr_sort = zeros(ncell, ngene);
+    for ig = 1:ngene
+        [y_rfr_fit(1:ncell, ig), idx] = ...
+                            loess_smoothing(t, X_rfr(ig,:)', sp);
+        t_rfr_sort(1:ncell, ig) = t(idx);
+    end
+    toc;
+    
+    % Descide min and max
+    rfr_max = max(max(y_rfr_fit));
+    lasso_max = max(max(y_lasso_fit));
+    qubo_max = max(max(y_qubo_fit));
+    ymax = round(max(rfr_max, max(lasso_max, qubo_max)));
+    
+    rfr_min = min(min(y_rfr_fit));
+    lasso_min = min(min(y_lasso_fit));
+    qubo_min = min(min(y_qubo_fit));
+    ymin = round(min(rfr_min, min(lasso_min, qubo_min)));
 
-load('../selected_50f_results/Tqubo_f50_monocle3_pseudotime_HVG_5000_cells_4697.mat')
-g_qubo_sel = Tqubo.selectedGenes;
-
-load('../selected_50f_results/Tml_f50_monocle3_pseudotime_HVG_5000_cells_4697.mat')
-% LASSO features
-g_lasso_sel = Tml{1}.selectedGenes;
-% Random forest regression features
-g_rfr_sel = Tml{4}.selectedGenes;
-
-rfr_u_lasso = union(g_lasso_sel, g_rfr_sel);
-qubo_only = setdiff(g_qubo_sel, rfr_u_lasso,'stable'); % This keeps g_qubo_sel order
-
-% QUBO only features
-idx_qubo_only = zeros(length(qubo_only), 1);
-for i = 1:length(qubo_only)
-    idx_qubo_only(i) = find(sce.g == qubo_only(i));
-end
-
-% QUBO features
-idx_qubo = zeros(length(g_qubo_sel), 1);
-for i = 1:length(g_qubo_sel)
-    idx_qubo(i) = find(sce.g == g_qubo_sel(i));
-end
-g_qubo = sce.g(idx_qubo);
-X_qubo = X(idx_qubo,:);
-
-% LASSO features
-idx_lasso = zeros(length(g_lasso_sel), 1);
-for i = 1:length(g_lasso_sel)
-    idx_lasso(i) = find(sce.g == g_lasso_sel(i));
-end
-g_lasso = sce.g(idx_lasso);
-X_lasso = X(idx_lasso,:);
-
-% RFR features
-idx_rfr = zeros(length(g_rfr_sel), 1);
-for i = 1:length(g_rfr_sel)
-    idx_rfr(i) = find(sce.g == g_rfr_sel(i));
-end
-g_rfr = sce.g(idx_rfr);
-X_rfr = X(idx_rfr,:);
-
-% Predictor
-cell_type_target = 'monocle3_pseudotime';
-
-% Preparing target predictor y from pseudo-time values per cell
-idx = find(contains(sce.list_cell_attributes(1:2:end), cell_type_target));
-if isempty(idx), return; end
-t = sce.list_cell_attributes{idx*2};
-
-% Smoothing parameter
-sp = 0.75;
-
-tic;
-% QUBO fitting
-ngene = size(X_qubo, 1);
-ncell = size(X_qubo, 2);
-y_qubo_fit = zeros(ncell, ngene);
-t_qubo_sort = zeros(ncell, ngene);
-for ig = 1:ngene
-    [y_qubo_fit(1:ncell, ig), idx] = ...
-                        loess_smoothing(t, X_qubo(ig,:)', sp);
-    t_qubo_sort(1:ncell, ig) = t(idx);
-end
-toc;
-
-tic;
-% LASSO fitting
-ngene = size(X_lasso, 1);
-ncell = size(X_lasso, 2);
-y_lasso_fit = zeros(ncell, ngene);
-t_lasso_sort = zeros(ncell, ngene);
-for ig = 1:ngene
-    [y_lasso_fit(1:ncell, ig), idx] = ...
-                        loess_smoothing(t, X_lasso(ig,:)', sp);
-    t_lasso_sort(1:ncell, ig) = t(idx);
-end
-toc;
-
-tic;
-% RFR fitting
-ngene = size(X_rfr, 1);
-ncell = size(X_rfr, 2);
-y_rfr_fit = zeros(ncell, ngene);
-t_rfr_sort = zeros(ncell, ngene);
-for ig = 1:ngene
-    [y_rfr_fit(1:ncell, ig), idx] = ...
-                        loess_smoothing(t, X_rfr(ig,:)', sp);
-    t_rfr_sort(1:ncell, ig) = t(idx);
-end
-toc;
-
-% Descide min and max
-rfr_max = max(max(y_rfr_fit));
-lasso_max = max(max(y_lasso_fit));
-qubo_max = max(max(y_qubo_fit));
-ymax = round(max(rfr_max, max(lasso_max, qubo_max)));
-
-rfr_min = min(min(y_rfr_fit));
-lasso_min = min(min(y_lasso_fit));
-qubo_min = min(min(y_qubo_fit));
-ymin = round(min(rfr_min, min(lasso_min, qubo_min)));
-
+% ---------------------------------------------------------------------
 %% PLOTTING
 close all
 
@@ -142,7 +143,9 @@ filename = 'lasso_features.png';
 % Save as high-quality PNG using print
 resolution = 300; 
 %print(f, filename, '-dpng', sprintf('-r%d', resolution));
+set(gca, 'Fontsize', 15, 'LineWidth', 1.5)
 
+% ---------------------------------------------------------------------
 % Plot RFR features in one figure
 f = figure;
 f.Position(3)=fwd;
@@ -167,7 +170,10 @@ filename = 'rfr_features.png';
 % Save as high-quality PNG using print
 resolution = 300; 
 %print(f, filename, '-dpng', sprintf('-r%d', resolution));
+set(gca, 'Fontsize', 15, 'LineWidth', 1.5)
 
+
+% -----------------------------------------------------------
 % Plot QUBO unique and all features
 f = figure;
 f.Position(3)=fwd;
@@ -205,8 +211,12 @@ filename = 'qubo_features.png';
 % Save as high-quality PNG using print
 resolution = 300; 
 %print(f, filename, '-dpng', sprintf('-r%d', resolution));
+set(gca, 'Fontsize', 15, 'LineWidth', 1.5)
+
 
 %% Non-linear genes Possible figure 3
+
+%{
 % Non-linear genes
 my_genes = ["MAP1B" "KLK10" "TRH" "IGFBP5"  "TP53I11" "RGS10" "SFRP1" "TUBA1C" "VIM" "YWHAB"];
 % Create a 2x5 figure
@@ -282,3 +292,4 @@ filename = 'qubo_unique_genes_figure.png';
 % Save as high-quality PNG using print
 resolution = 300; 
 print(f, filename, '-dpng', sprintf('-r%d', resolution));
+%}

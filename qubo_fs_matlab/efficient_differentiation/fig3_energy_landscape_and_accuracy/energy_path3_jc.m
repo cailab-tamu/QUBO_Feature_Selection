@@ -1,4 +1,4 @@
-function energy_path3(R0, qubo_genes, lasso_genes, rfr_genes, genes, K, alphasol, save_path)
+function energy_path3_jc(R0, qubo_genes, lasso_genes, rfr_genes, genes, K, alphasol, save_path)
     % Calculate the energy landscape for QUBO, LASSO, and RFR solutions
     % Inputs:
     % R0: Initial redundancy matrix with importance vector as the last row

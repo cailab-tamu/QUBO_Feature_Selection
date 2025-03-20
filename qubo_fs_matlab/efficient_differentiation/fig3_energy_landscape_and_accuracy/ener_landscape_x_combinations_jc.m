@@ -48,6 +48,7 @@ end
 E_icomb_reversed = flip(E_icomb);
 
 %% Plot the reversed 1D energy values
+
 f = figure;
 hold on;
 plot(E_icomb_reversed, '-ok', 'MarkerSize', 4, 'DisplayName', 'Raw Energy Values');
@@ -101,7 +102,7 @@ end
 % Reverse the energy values (for sorted case)
 E_icomb_reversed2 = flip(E_icomb2);
 
-%%
+%
 % Plot the reversed 1D energy values
 f = figure;
 hold on;
@@ -112,7 +113,8 @@ xlabel('Combination Index','FontSize', 14);
 ylabel('Energy value','FontSize', 14);
 title({'Energy Minimization Process'}, 'FontSize', 15);
 lgd = legend('show', 'Location','best');
-fontsize(lgd, 11,'points')
+lgd.FontSize = 14;
+% fontsize(lgd, 11,'points')
 grid on;
 hold off;
 
@@ -120,6 +122,9 @@ hold off;
 filename = 'energy_combinations_min.png';
 resolution = 300; 
 % print(f, filename, '-dpng', sprintf('-r%d', resolution));
+box on
+set(gca, 'Fontsize', 15, 'LineWidth', 1.5)
+
 
 %% Shuffle Qsub matrix for 2D energy plot
 %{
@@ -168,7 +173,9 @@ else
 end
 
 % Create a 3D surface plot for the shuffled energy values
-hx = gui.myFigure;
+% hx = gui.myFigure;
+f=figure;
+f.Position(3)=f.Position(3)*1.4;
 [pX, pY] = meshgrid(1:n1, 1:n2);  % Define grid for X and Y axes
 
 if useinterp
@@ -183,15 +190,15 @@ end
 %box on;
 colormap jet
 view(3);  % 3D view for better visualization
-hx.show;  % Display the figure
+% hx.show;  % Display the figure
 
-ax = hx.FigHandle.Children; % Access the Axes object
+% ax = hx.FigHandle.Children; % Access the Axes object
 
 xlabel('Combination Index 1', 'FontSize', 14); % Use 'Parent' to specify axes
 ylabel('Combination Index 2', 'FontSize', 14); % Use 'Parent' to specify axes
 zlabel('Energy Value', 'FontSize', 14);
-title({'Energy Landscape'}, 'FontSize', 15);
-
+%title({'Energy Landscape'}, 'FontSize', 15);
+ax = gca;
 % Rotate the labels
 xlabel_handle = ax.XLabel; % Access the XLabel object directly
 ylabel_handle = ax.YLabel; % Access the YLabel object directly
@@ -200,7 +207,12 @@ set(ylabel_handle, 'Rotation', -24);
 
 % Save as high-quality PNG using print
 filename = 'energy_combinations_landscape.png';
-exportgraphics(ax, filename, 'Resolution', 300);
+% exportgraphics(ax, filename, 'Resolution', 300);
+
+box on
+set(gca, 'Fontsize', 15, 'LineWidth', 1.5)
+
+
 %% Energy path plot
 % Energy landscape
 load("../R0.mat")
@@ -210,8 +222,10 @@ load("../selected_500f_results/Tml_f500_monocle3_pseudotime_HVG_5000_cells_4697.
 K = length( Tqubo.selectedGenes); 
 energy_path3_jc(R0, Tqubo.selectedGenes, Tml{1}.selectedGenes, Tml{4}.selectedGenes, g, K,...
                  Tqubo.alphasol, 'energy_path2_500.png');
-
+set(gca, 'Fontsize', 15, 'LineWidth', 1.5)
 %% Not used...
+
+%{
 % a=dec2bin([18 29 20;1 2 3]', 5)'-'0'
 a = dec2bin(combinations', 5)'-'0';
 a = a(:);
@@ -222,7 +236,7 @@ x = eb(:,1); y = eb(:,2);
 z = E_icomb_reversed;
 [xq, yq] = meshgrid(linspace(min(x), max(x), 50), linspace(min(y), max(y), 50)); 
 zq = griddata(x, y, z, xq, yq, 'natural');
-
+%}
 
 
 %{
