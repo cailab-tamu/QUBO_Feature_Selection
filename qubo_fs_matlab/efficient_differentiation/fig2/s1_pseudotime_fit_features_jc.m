@@ -213,6 +213,82 @@ resolution = 300;
 %print(f, filename, '-dpng', sprintf('-r%d', resolution));
 set(gca, 'Fontsize', 15, 'LineWidth', 1.5)
 
+%% Plotting for Mathworks
+
+fwd=870/1.6;
+fht=278;
+
+
+regularlinew = 1.5;
+highlitlinew = 0.5;
+
+f = figure;
+f.Position(3)=fwd;
+f.Position(4)=fht;
+hold on
+ng = size(y_lasso_fit, 2);
+for k = 1:ng
+    plot(t_lasso_sort(:,k), y_lasso_fit(:,k), ...
+        'LineWidth', regularlinew, 'Color', regularlinec); % Using blue for ML in its own figure
+end
+xlim([0 max(t)]);
+ylim([ymin ymax]);
+xlabel('Pseudotime')
+ylabel('Expression')
+box on
+title('LASSO')
+hold off;
+%f.Position(3) = 545;
+%f.Position(4) = 266;
+filename = 'lasso_features.png';
+
+% Save as high-quality PNG using print
+resolution = 300; 
+%print(f, filename, '-dpng', sprintf('-r%d', resolution));
+set(gca, 'Fontsize', 15, 'LineWidth', 1.5)
+
+
+f = figure;
+f.Position(3)=fwd;
+f.Position(4)=fht;
+hold on
+ng = size(y_qubo_fit, 2); % Get the number of ML features
+for k = 1:ng
+    plot(t_qubo_sort(:,k), y_qubo_fit(:,k), ...
+        'LineWidth', regularlinew, ...
+        'Color', regularlinec); % Using blue for ML in its own figure
+end
+
+idx_qubo_only = ismember(g_qubo_sel, g_lasso_sel);
+
+%idx_qubo_only = ismember(g_qubo_sel, qubo_only);
+t_qubo_unique_sort = t_qubo_sort(:,idx_qubo_only);
+y_qubo_unique_fit = y_qubo_fit(:,idx_qubo_only);
+
+ng = size(y_qubo_unique_fit, 2);
+for k = 1:ng
+    plot(t_qubo_unique_sort(:,k), y_qubo_unique_fit(:,k), ...
+        'LineWidth', highlitlinew, ...
+        'Color', highlitlinec);
+    %plot(t_qubo_unique_sort(:,k), y_qubo_unique_fit(:,k),'LineWidth',.5,'Color', 'g');
+end
+xlim([0 max(t)]);
+ylim([ymin ymax]);
+xlabel('Pseudotime')
+ylabel('Expression')
+box on
+title('QUBO')
+hold off;
+%f.Position(3) = 545;
+%f.Position(4) = 266;
+filename = 'qubo_features.png';
+
+% Save as high-quality PNG using print
+resolution = 300; 
+%print(f, filename, '-dpng', sprintf('-r%d', resolution));
+set(gca, 'Fontsize', 15, 'LineWidth', 1.5)
+
+
 
 %% Non-linear genes Possible figure 3
 
