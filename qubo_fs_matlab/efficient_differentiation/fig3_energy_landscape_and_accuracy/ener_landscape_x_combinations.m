@@ -62,9 +62,8 @@ grid on;
 hold off;
 
 % Save as high-quality PNG using print
-filename = 'raw_energy_combinations.png';
-resolution = 300; 
-print(f, filename, '-dpng', sprintf('-r%d', resolution));
+filename = 'raw_energy_combinations.svg';
+print(f, filename, '-dsvg');
 %% Plot sorted selection in 1D energy values
 
 % Generate the idxg based on Tqubo.selectedGenes and genes
@@ -114,12 +113,11 @@ grid on;
 hold off;
 
 % Save as high-quality PNG using print
-filename = 'energy_combinations_min.png';
-resolution = 300; 
-print(f, filename, '-dpng', sprintf('-r%d', resolution));
+filename = 'energy_combinations_min.svg';
+print(f, filename, '-dsvg');
 
 %% Shuffle Qsub matrix for 2D energy plot
-%{
+%{ 
 %Shuffle idxg (random permutation of idxg)
 idxg_shuffled = idxg(randperm(length(idxg))); % Shuffle idxg randomly
 
@@ -182,7 +180,7 @@ colormap jet
 view(3);  % 3D view for better visualization
 hx.show;  % Display the figure
 
-ax = hx.FigHandle.Children; % Access the Axes object
+ax = hx.FigHandle.Children; % Access the Axes object ( not working again)
 
 xlabel('Combination index 1', 'FontSize', 14); % Use 'Parent' to specify axes
 ylabel('Combination index 2', 'FontSize', 14); % Use 'Parent' to specify axes
@@ -196,8 +194,9 @@ set(xlabel_handle, 'Rotation', 16);
 set(ylabel_handle, 'Rotation', -24);
 
 % Save as high-quality PNG using print
-filename = 'energy_combinations_landscape.png';
-exportgraphics(ax, filename, 'Resolution', 300);
+filename_svg = 'energy_combinations_landscape.svg';
+% Save the plot as an SVG file
+print(ax, filename_svg, '-dsvg');
 %% Energy path plot
 % Energy landscape
 load("../R0.mat")
@@ -205,8 +204,8 @@ load("../selected_500f_results/Tqubo_f500_monocle3_pseudotime_HVG_5000_cells_469
 load("../selected_500f_results/Tml_f500_monocle3_pseudotime_HVG_5000_cells_4697.mat")
 
 K = length( Tqubo.selectedGenes); 
-energy_path3(R0, Tqubo.selectedGenes, Tml{1}.selectedGenes, Tml{4}.selectedGenes, g, K,...
-                 Tqubo.alphasol, 'energy_path2_500.png');
+energy_path3(R0, Tqubo.selectedGenes, Tml{1}.selectedGenes, Tml{4}.selectedGenes, genes, K,...
+                 Tqubo.alphasol, 'energy_path2_500.svg');
 
 %% Not used...
 % a=dec2bin([18 29 20;1 2 3]', 5)'-'0'

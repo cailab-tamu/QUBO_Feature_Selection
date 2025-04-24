@@ -56,8 +56,7 @@ function energy_path3(R0, qubo_genes, lasso_genes, rfr_genes, genes, K, alphasol
     hold off;
     % Save the plot to a file if save_path is provided
     if nargin > 7 && ~isempty(save_path)
-        resolution = 300; 
-        print(f, save_path, '-dpng', sprintf('-r%d', resolution));
+        print(f, save_path, '-dsvg');
         fprintf('Plot saved to %s\n', save_path);
     end
 end
