@@ -12,6 +12,7 @@ function [training_info, selectedGenes0, avg_training_accu] = cross_validation_q
     % Run QUBO feature selection on the full dataset
     [Tqubo0, sa0] = qfeatures_qubo_base(X, g, y, K, readR);
     selectedGenes0 = Tqubo0.selectedGenes;
+    ener0 = Tqubo0.fval;
 
     % -------------- Cost function of real problem-------------------
     load("R0.mat");
@@ -20,11 +21,6 @@ function [training_info, selectedGenes0, avg_training_accu] = cross_validation_q
     % Importance vector
     J = R0(end, 1:end-1);
     Q = (1 - Tqubo0.alphasol) * R - Tqubo0.alphasol * diag(J);
-    
-    % This only for checking cost function
-    %evec = Q * xsol.BestX;
-    %ener0 = xsol.BestX'*evec;
-    %assert(ener0 == Tqubo.fval);
     % --------------------------------------------------------------
 
     % Store selected genes for each fold
@@ -42,8 +38,8 @@ function [training_info, selectedGenes0, avg_training_accu] = cross_validation_q
         X_train = X(:, trainIdx);
         y_train = y(trainIdx);
         
-        X_test = X(:, testIdx);
-        y_test = y(testIdx);
+        %X_test = X(:, testIdx);
+        %y_test = y(testIdx);
 
         % Run QUBO feature selection on the training set
         fprintf('X_train size ( %d, %d) \n ', size(X_train, 1), size(X_train, 2));
@@ -53,7 +49,7 @@ function [training_info, selectedGenes0, avg_training_accu] = cross_validation_q
         genesTraining = Tqubo_train.selectedGenes;
 
         % Evaluate the model on the test set
-        [ener_accu, ener_embed_accu]= ifold_test(Tqubo_train, sa_train, sa0, Q);
+        [ener_accu, ener_embed_accu]= ifold_test(Tqubo_train, sa_train, ener0, Q);
         fprintf("*****Test Accuracy (%%): %f \n", ener_embed_accu);
 
         avg_training_accu = ener_embed_accu + avg_training_accu;
