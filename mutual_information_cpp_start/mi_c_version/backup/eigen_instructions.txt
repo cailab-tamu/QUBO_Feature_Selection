@@ -1,0 +1,20 @@
+# Get the repository to build eigen if needed, MI repo will contain a copy
+# but could break
+
+git clone https://gitlab.com/libeigen/eigen.git
+cd eigen
+
+# Building eigen libraries
+mkdir build
+cd build
+cmake ../ -DCMAKE_INSTALL_PREFIX=/custom/install/path ../source_directory 
+# For example cmake ../ -DCMAKE_INSTALL_PREFIX=/c/Users/ssromerogon/Documents/vscode_working_dir/scGEAToolbox_addson/QUBO_FS_python/mi_c_version/eigen3
+
+# Will build eigen
+cmake --build . --config Release
+# This will set the libraries in the custom directory
+cmake --install .
+
+This makes a 24 MB size, but if preffered, you can point to the repository
+LOCAL_EIGEN_WIN = C:/Users/ssromerogon/Documents/vscode_working_dir/eigen # Pointing to Git repo (130 M)
+LOCAL_EIGEN_WIN = C:/Users/ssromerogon/Documents/vscode_working_dir/scGEAToolbox_addson/QUBO_FS_python/mi_c_version/eigen3/include/eigen3 # Pointing to built/installed dir (24 M)

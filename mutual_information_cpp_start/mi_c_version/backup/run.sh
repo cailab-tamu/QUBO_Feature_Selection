@@ -1,0 +1,1 @@
+ g++ -std=c++17 -g -O0 -Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor -Wold-style-cast     -Wcast-align -Wunused -Woverloaded-virtual -Wconversion -Wsign-conversion -Wnull-dereference     -Wdouble-promotion -Wformat=2 -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer     -I/usr/include/eigen3 -o debug_program debug_mi.cpp

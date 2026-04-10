@@ -1,0 +1,8 @@
+Required library Eigen
+
+Linux installation: 
+sudo apt install libeigen3-dev
+
+Compiling requires to go to :  path_to/mi_c_version 
+make SYS=windows DEBUG=no
+

@@ -1,0 +1,16 @@
+Loading matrix from file: sparse_matrix.mtx
+Matrix loaded with size: 5000x5000
+Loading matrix from file: sparse_matrix_mi.mtx
+Matrix loaded with size: 5000x5000
+Sparse Matrix size: 5000x5000
+Python MI Matrix size: 5000x5000
+Time taken for the parallel for loop: 3233.35 seconds
+Error between C++ and Python MI matrices: 5.8814e-06
+Requested procs : 2
+Max procs available: 4
+Time taken for the parallel for loop: 1292.67 seconds
+Error between C++ and Python MI matrices: 4.6847e-06
+Requested procs : 4
+Max procs available: 4
+Time taken for the parallel for loop: 670.95 seconds
+Error between C++ and Python MI matrices: 4.6847e-06
