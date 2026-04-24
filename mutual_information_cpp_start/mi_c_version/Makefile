@@ -40,7 +40,17 @@ else
 endif
 
 # Targets
-TARGETS = mi_serial mi_openmp
+TARGETS = mi_serial mi_openmp py
+
+# Python / pybind11 settings
+PYTHON = python3
+# try to get pybind11/python include and link flags; fall back to python-config
+PYTHON_INCLUDES := $(shell $(PYTHON) -m pybind11 --includes 2>/dev/null || $(PYTHON)-config --includes 2>/dev/null || echo "")
+PYTHON_LDFLAGS := $(shell $(PYTHON) -m pybind11 --libs 2>/dev/null || $(PYTHON)-config --ldflags 2>/dev/null || echo "")
+# local pybind11 headers (this repo)
+PYBIND_LOCAL_INC = -I./pybind11
+# extension suffix (.so, .cpython-*-x86_64-linux-gnu.so, etc)
+EXT_SUFFIX := $(shell $(PYTHON) -c "import sysconfig;print(sysconfig.get_config_var('EXT_SUFFIX') or '.so')")
 
 # Rules
 all: $(TARGETS)
@@ -54,6 +64,10 @@ mi_serial: mi_serial.cpp mmio.c mmio.h
 
 mi_openmp: mi_openmp.cpp mmio.c mmio.h
 	$(CXX) $(CXXFLAGS) $(OPENMPFLAGS) -o $@ mi_openmp.cpp mmio.c
+py: py_mi$(EXT_SUFFIX)
+
+py_mi$(EXT_SUFFIX): mi_openmp-pybind11.cpp mmio.c mmio.h
+	$(CXX) $(CXXFLAGS) -fPIC -shared $(OPENMPFLAGS) $(PYBIND_LOCAL_INC) $(PYTHON_INCLUDES) -o $@ mi_openmp-pybind11.cpp mmio.c $(PYTHON_LDFLAGS)
 
 clean:
 	rm -f $(TARGETS)
