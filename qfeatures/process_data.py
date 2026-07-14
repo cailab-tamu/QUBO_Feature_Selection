@@ -1,5 +1,4 @@
 import numpy as np
-import scanpy as sc
 import scipy.sparse as sp
 from scipy.sparse import csr_matrix, issparse
 
