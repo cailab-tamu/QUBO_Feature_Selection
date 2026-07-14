@@ -1,24 +1,27 @@
 import pathlib
 from setuptools import setup, find_packages
 
-# Ensure the path to the 'qfeatures' folder is correctly added
 HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 DESCRIPTION = "Quantum Feature Selection"
 
-# Find packages inside the 'qfeatures' folder
-PACKAGES = find_packages(where="qfeatures")
-
-# Verbose output: print the list of packages found
+# Discover packages from the REPO ROOT. This finds the top-level `qfeatures`
+# package (the folder with __init__.py). The old call find_packages(where=
+# "qfeatures") searched *inside* qfeatures/ for sub-packages and returned [],
+# so nothing was installed.
+PACKAGES = find_packages(include=["qfeatures", "qfeatures.*"])
 print(f"Packages found: {PACKAGES}")
 
+# Match what the modules actually import. Keep versions unpinned so pip does
+# not fight the conda env (environment.yml already pins the heavy ones).
 INSTALL_REQUIRES = [
-    'numpy',    # Add dependencies your package needs
-    'pandas',
-    'dwave-system',  # For D-Wave integration, if applicable
+    "numpy",
+    "pandas",
+    "scipy",
+    "scanpy",
+    "joblib",
+    "dwave-ocean-sdk",   # provides dwave.samplers, dwave.system, dimod
 ]
-
-# Print the install_requires for visibility
 print(f"Install requires: {INSTALL_REQUIRES}")
 
 KEYWORDS = [
@@ -26,21 +29,21 @@ KEYWORDS = [
     "feature selection",
     "quantum annealing",
     "simulated annealing",
-    "single-cell"
+    "single-cell",
 ]
 
 setup(
-    name='qfeatures',  # Updated package name
-    version='0.1.0',   # Version number
+    name="qfeatures",
+    version="0.1.0",
     long_description=README,
+    long_description_content_type="text/markdown",
     description=DESCRIPTION,
-    author='Selim Romero',
-    url='https://github.com/cailab-tamu/QUBO_Feature_Selection',
-    author_email='ssromerogon@tamu.edu',
+    author="Selim Romero",
+    url="https://github.com/cailab-tamu/QUBO_Feature_Selection",
+    author_email="ssromerogon@tamu.edu",
     license="MIT",
-    packages=PACKAGES,  # Look for packages inside the 'qfeatures' folder
+    packages=PACKAGES,
     keywords=KEYWORDS,
-    package_dir={'qfeatures': 'qfeatures'},  # Adjust to match your structure
-    install_requires=INSTALL_REQUIRES,  # Add dependencies
-    python_requires='>=3.9,<3.10',  # Specify Python version compatibility for any 3.9.x version
+    install_requires=INSTALL_REQUIRES,
+    python_requires=">=3.9,<3.12",
 )
