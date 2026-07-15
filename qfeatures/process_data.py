@@ -137,6 +137,177 @@ def compute_pearson_residual(matrix, theta=100):
     return residuals
 
 
+def _calibrate_mi_rate(n_cells, n_bins=96, n_trials=200):
+    """
+    Measure how many MI pairs/sec this machine does, by timing the same inner
+    loop mi_functions uses (bincount on binned rows + entropies). Single
+    threaded; the caller scales by n_jobs.
+    """
+    import time
+    rng = np.random.default_rng(0)
+    a = rng.integers(0, n_bins, n_cells).astype(np.int32)
+    b = rng.integers(0, n_bins, n_cells).astype(np.uint8)
+
+    def _ent(c):
+        t = c.sum()
+        if t == 0:
+            return 0.0
+        p = c / t
+        p = p[p > 0]
+        return float(-np.sum(p * np.log2(p)))
+
+    t0 = time.time()
+    for _ in range(n_trials):
+        joint = np.bincount(a * n_bins + b, minlength=n_bins * n_bins)
+        joint = joint.reshape(n_bins, n_bins)
+        _ent(joint); _ent(joint.sum(axis=1)); _ent(joint.sum(axis=0))
+    el = time.time() - t0
+    return n_trials / el if el > 0 else float("inf")
+
+
+def sweep_prefilter(adata, layer=None, n_jobs=1, target_minutes=30,
+                    calibrate=True, detect_fracs=(0.001, 0.005, 0.01, 0.05, 0.1),
+                    disp_thresholds=(0.1, 0.2, 0.3, 0.5, 1.0, 2.0),
+                    top_ns=(10000, 7000, 5000, 3000, 2000)):
+    """
+    Diagnose gene-filter options before committing to an MI run.
+
+    Prints, for the matrix mat_transform_sc will read:
+      * detection and dispersion distributions
+      * genes kept / MI pairs / ESTIMATED MINUTES for each candidate threshold
+      * a recommendation that fits `target_minutes`
+
+    The runtime estimate is calibrated by timing this machine on the same inner
+    loop mutual_information_matrix uses, so it reflects your hardware rather
+    than a guess. It is still an estimate: real runs vary with thread
+    contention and the per-row binning pass.
+
+    Parameters
+    ----------
+    adata : AnnData (cells x genes)
+    layer : str or None
+        Matrix to analyse (default adata.X). Should be the sparse log1p data.
+    n_jobs : int
+        Threads you plan to pass to mutual_information_matrix. Used only to
+        scale the time estimate. Pass the real number (-1 -> os.cpu_count()).
+    target_minutes : float
+        Runtime budget used to pick the recommendation.
+    calibrate : bool
+        If False, skip the micro-benchmark and report pairs only.
+
+    Returns
+    -------
+    dict with keys 'mean', 'var', 'dispersion', 'detect_frac', 'pairs_per_sec'
+    so you can do your own analysis.
+    """
+    import os
+
+    X = adata.layers[layer] if layer is not None else adata.X
+    if not issparse(X):
+        X = csr_matrix(X)
+    X = X.tocsc()
+    n_cells, n_genes = X.shape
+
+    # per-gene stats, sparse-safe
+    n_nonzero = np.diff(X.indptr)
+    detect_frac = n_nonzero / n_cells
+    mean = np.asarray(X.mean(axis=0)).ravel()
+    mean_sq = np.asarray(X.multiply(X).mean(axis=0)).ravel()
+    var = np.maximum(mean_sq - mean ** 2, 0.0)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        disp = np.where(mean > 0, var / mean, 0.0)
+
+    if n_jobs is None or n_jobs < 0:
+        n_jobs_eff = os.cpu_count() or 1
+    else:
+        n_jobs_eff = max(1, n_jobs)
+
+    pps = None
+    if calibrate:
+        rate1 = _calibrate_mi_rate(n_cells)
+        pps = rate1 * n_jobs_eff          # optimistic: perfect thread scaling
+        print(f"[sweep] calibrated ~{rate1:,.0f} pairs/s/thread x {n_jobs_eff} "
+              f"threads -> ~{pps:,.0f} pairs/s (optimistic)")
+
+    def fmt_time(n_pairs):
+        if pps is None:
+            return ""
+        mins = n_pairs / pps / 60
+        if mins < 90:
+            return f"{mins:>8.1f} min"
+        return f"{mins/60:>8.1f} hr "
+
+    print(f"\n=== {n_genes:,} genes x {n_cells:,} cells ===")
+    print(f"all genes -> {n_genes*(n_genes-1)//2:,} pairs {fmt_time(n_genes*(n_genes-1)//2)}")
+
+    print("\ndetection (fraction of cells with nonzero):")
+    for p in (10, 25, 50, 75, 90):
+        print(f"  p{p:<2}: {np.percentile(detect_frac, p):.3f}")
+
+    print("\ndispersion (var/mean):")
+    dp = {p: np.percentile(disp, p) for p in (10, 25, 50, 75, 90)}
+    for p, v in dp.items():
+        print(f"  p{p:<2}: {v:.3f}")
+
+    # is dispersion actually discriminative here?
+    spread = dp[90] / dp[10] if dp[10] > 0 else np.inf
+    disp_useless = spread < 2.5
+    if disp_useless:
+        print(f"  !! p90/p10 = {spread:.2f} -> dispersion is NOT discriminative.")
+        print("     On log1p data var/mean collapses toward a common value, so any")
+        print("     threshold here is arbitrary (tiny changes swing the gene count")
+        print("     wildly). Prefer detection + top_n_variable.")
+
+    print("\nmin_cells_frac (detection filter):")
+    for f in detect_fracs:
+        n = int((detect_frac >= f).sum())
+        pr = n * (n - 1) // 2
+        note = "  <- drops rare-population markers" if f >= 0.05 else ""
+        print(f"  {f:<6} -> {n:>6,} genes, {pr:>12,} pairs {fmt_time(pr)}{note}")
+
+    print("\nmin_dispersion:")
+    for thr in disp_thresholds:
+        n = int((disp >= thr).sum())
+        pr = n * (n - 1) // 2
+        print(f"  {thr:<6} -> {n:>6,} genes, {pr:>12,} pairs {fmt_time(pr)}")
+
+    print("\ntop_n_variable (rank by variance):")
+    for n in top_ns:
+        if n > n_genes:
+            continue
+        pr = n * (n - 1) // 2
+        print(f"  {n:<6} -> {n:>6,} genes, {pr:>12,} pairs {fmt_time(pr)}")
+
+    # ---- recommendation ----
+    print("\n=== recommendation ===")
+    if pps is None:
+        print("  (no calibration; re-run with calibrate=True for time estimates)")
+    else:
+        budget_pairs = pps * target_minutes * 60
+        n_ok = int((1 + np.sqrt(1 + 8 * budget_pairs)) / 2)   # solve n(n-1)/2<=B
+        n_ok = min(n_ok, n_genes)
+        print(f"  budget {target_minutes:g} min -> about {n_ok:,} genes "
+              f"({n_ok*(n_ok-1)//2:,} pairs)")
+        cand = [n for n in top_ns if n <= n_ok]
+        pick = max(cand) if cand else min(top_ns)
+        base = "min_cells_frac=0.01"
+        if n_ok >= n_genes:
+            print(f"  all {n_genes:,} genes fit the budget; "
+                  f"prefilter_genes(adata, {base}) is enough.")
+        else:
+            print(f"  prefilter_genes(adata, {base}, top_n_variable={pick})")
+        if disp_useless:
+            print("  (omit min_dispersion: not discriminative on this data)")
+        print("\n  NOTE: top_n_variable ranks by variance, which is a crude HVG "
+              "selection.\n  It is a choice about your feature space, not a "
+              "principled cutoff, so\n  record whatever you use in your methods. "
+              "scanpy's highly_variable_genes\n  does the same job better "
+              "(it bins by mean first).")
+
+    return {"mean": mean, "var": var, "dispersion": disp,
+            "detect_frac": detect_frac, "pairs_per_sec": pps}
+
+
 def _mem_report(name, Xsp):
     """Print shape / nnz / approximate CSR memory footprint."""
     total = Xsp.data.nbytes + Xsp.indices.nbytes + Xsp.indptr.nbytes
