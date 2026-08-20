@@ -100,9 +100,8 @@ def quantum_test(alpha, MI_mat, df_features, K=100, mode='sa'):
         mode (str): Solver mode ('sa' for simulated annealing, 'qa' for quantum annealing).
 
     Returns:
-        tuple: (new_df, ener_per_feat, qa_sol)
+        tuple: (new_df, qa_sol)
             new_df: Filtered and sorted DataFrame with selected features.
-            ener_per_feat: Energy per feature as a result of the solution.
             qa_sol: Solution vector indicating selected features.
     """
     # Redundancy matrix and importance vector from MI_mat and K
@@ -124,11 +123,11 @@ def quantum_test(alpha, MI_mat, df_features, K=100, mode='sa'):
         sampleset_q = sampler_q.sample_qubo(qubo)
 
         # Convert total runtime from microseconds (10^-6) to seconds
-        runtime_all = sampleset_q.info.get('run_time', 0)  # Provide a default value in case the key is missing
+        runtime_all = sampleset_q.info.get('run_time', 0)
         runtime_all_seconds = runtime_all / 1_000_000
 
         # Convert QPU access time from microseconds (10^-6) to seconds
-        annealing_time = sampleset_q.info.get('qpu_access_time', 0)  # Provide a default value in case the key is missing
+        annealing_time = sampleset_q.info.get('qpu_access_time', 0)
         annealing_time_seconds = annealing_time / 1_000_000
 
         print(f"Quantum Annealing time: {annealing_time_seconds} seconds")
@@ -146,24 +145,25 @@ def quantum_test(alpha, MI_mat, df_features, K=100, mode='sa'):
 
     # Store selected features from quantum solution
     sample_dict_q = sampleset_q.first.sample
-    values_q = list(sample_dict_q.values())
 
-    # Convert list to numpy array and then cast to int
-    qa_sol = np.array(values_q).astype(int)
+    # Reconstruct full-length decision vector matching original Qmat size
+    n_features = Qmat.shape[0]
+    qa_sol = np.zeros(n_features, dtype=int)
+    for idx, val in sample_dict_q.items():
+        qa_sol[idx] = int(val)
 
-    # Multiply selected rows by qa_sol (vector of ones, so it's effectively the sum of selected rows)
+    # Multiply full selected vector by Qmat
     ener_per_feat = Qmat @ qa_sol
 
     # Add results to the DataFrame
-    df_features = df_features.copy()  # Ensure we don't modify the original DataFrame
-    df_features['feature_selected'] = values_q
-    df_features = df_features.rename(columns={0: 'Features'})  # Ensure '0' column is correctly named
+    df_features = df_features.copy()
+    df_features['feature_selected'] = qa_sol
     df_features['feature_score'] = ener_per_feat
 
     # Filter results
     filt_df_q = df_features[df_features['feature_selected'] > 0].copy()
 
-    # Sort by 'gene_score'
+    # Sort by 'feature_score'
     filt_df_q = filt_df_q.sort_values(by='feature_score', ascending=True).copy()
 
     new_df = filt_df_q.reset_index(drop=True)
